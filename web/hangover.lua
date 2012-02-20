@@ -1,7 +1,7 @@
 require "orbit"
 
 module("hangover", package.seeall, orbit.new)
-require "db"
+require "lib/model"
 
 function render(content)
   return html {
@@ -29,7 +29,6 @@ hangover:dispatch_static("/p/.+")
 hangover:dispatch_get(index, "/")
 
 hangover:htmlify("render")
-
 
 return _M
 
