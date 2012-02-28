@@ -29,7 +29,7 @@ set("server.telnet", true)
 # LIVE SOURCE
 # studio: stream harbor, live stream comes in here
 set("harbor.bind_addr","0.0.0.0")
-live = input.harbor("live",port=8000,password="dubdabdub")
+live = input.harbor(id="liveharbor", "live",port=8000,password="dubdabdub")
 
 # FALLBACK SOURCE
 # reads all files on startup, so will either fail
@@ -74,8 +74,8 @@ onnext = on_end(id="endoftrack", end_uri,next)
 playout = smart_crossfade(server.insert_metadata(onnext))
 
 # INPUTS
-failsafes = fallback([playout, safeword, blank()])
-sources = fallback(track_sensitive=false, [live, failsafes])
+failsafes = fallback(id="failsafes", [playout, safeword, blank()])
+sources = fallback(id="sources", track_sensitive=false, [live, failsafes])
 input = 
   on_metadata(id="metadata!",meta_uri,
   on_blank(id="blank!",
@@ -100,7 +100,7 @@ server.register("nexturl", set_nexturl)
 # OUTPUTS
 
 # kinda uninterrupted when buffered
-output.alsa(input)
+output.alsa(id="alsa",input)
 #output.external("nextprogram")
 #output.icecast.vorbis(
 
