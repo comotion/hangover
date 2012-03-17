@@ -29,7 +29,6 @@
 ---------------------------------
 
 require "tokyocabinet"
-local inspect = require 'inspect'
 
 module("tracks", package.seeall)
 
@@ -50,7 +49,7 @@ function tracks:add()
     ecode = trk:ecode()
     print("Error adding track: " .. trk:errmsg(ecode))
   else
-    print("Added track:" .. pkey .. inspect(cols))
+    print("Added track:" .. pkey)
   end
 end
 
@@ -82,7 +81,6 @@ function tracks:searchtest()
   res = q:search()
   for i = 1, #res do
     c = trk:get(res[i])
-    print(inspect(c))
   end
 end
 

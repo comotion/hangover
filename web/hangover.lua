@@ -1,5 +1,4 @@
 local orbit = require "orbit"
-local inspect = require "inspect"
 
 module("hangover", package.seeall, orbit.new)
 require "lib/model"
@@ -43,7 +42,6 @@ function view_webi(web)
   return render("web!",  web:page_inline(fooin))
 end
 function view_web(web)
-  print(inspect(web)) -- debug a little.
   web.script_name = "foo"
   return render("web!",  web:page("views/foo.op"))
   --return render("web!",html { li{a{ href= web:link("/"), "HOME" }} })
