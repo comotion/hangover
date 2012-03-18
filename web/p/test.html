@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand">hangover</a>
+          <ul class="nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#">Database</a></li>
+            <li><a href="#">Schedule</a></li>
+            <li class="divider-vertical"> </li>
+            <form class="navbar-search">
+              <input type="text" class="search-query" placeholder="Quick Search">
+            </form>
+          </ul>
+          <ul class="nav pull-right">
+            <li><a><i class="icon-music"></i> &hearts;</a></li>
+            <li class="dropdown" id="menu1">
+              <a class="dropdown-toggle" href="#menu1" data-toggle="dropdown">
+                User N. ame
+                <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Metafusion</a></li>
+                <li class="active"><a href="#">radiOrakel</a></li>
+                <li class="divider"></li>
+                <li><a href="#">Admin</a></li>
+                <li><a href="#">Log out</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+        <div class="hero-unit">
+          <h1>Welcome to hangover!</h1>
+          <p><strong>This instance is currently serving two stations, 420 341 songs and 5 active users.</strong></a>
+          <p>If this is your first time using hangover you might want to look at the <a href="#nope">Quick Start Guide</a>, but since that hasn't been written yet - maybe you just want try and find the <a href="#hahano">Documentation</a>.</p>
+        </div>
+    </div>
+
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/bootstrap-dropdown.js"></script>
+    <script>
+      $('.dropdown-toggle').dropdown()
+    </script>
+  </body>
+</html>
+
