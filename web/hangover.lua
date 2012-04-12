@@ -1,9 +1,11 @@
 local orbit = require "orbit"
+require "orbit.cache"
 
 module("hangover", package.seeall, orbit.new)
-require "lib/model"
+local cache = orbit.cache.new(hangover, cache_path)
+tracks = require "lib/model"
 
-function render(t, content)
+function render( t, content)
   return html {
     head { title("Hangover - " .. t),
            meta{ ["http-equiv"] = "Content-Type",
@@ -20,8 +22,8 @@ function render(t, content)
 end
 
 
-function index()
-  return render("hello","world")
+function index(web)
+  return render("hello",tracks:dump())
 end
 
 function render_add_track()
@@ -75,6 +77,7 @@ hangover:dispatch_get(render_add_track2, "/wtf")
 hangover:dispatch_get(view_web, "/stfu")
 hangover:dispatch_get(view_webi, "/stfui")
 hangover:dispatch_get(view_links, "/lonks")
+hangover:dispatch_get(cache(index), "/post/(%d+)")
 
 hangover:dispatch_static("/p/.+")
 
