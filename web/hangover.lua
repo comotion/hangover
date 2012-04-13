@@ -1,9 +1,41 @@
 local orbit = require "orbit"
-require "orbit.cache"
-
+local ocash = require "orbit.cache"
+local json  = require "cjson"
+json.encode_invalid_numbers = true
+-- local cjson2 = cjson.new()
+-- local cjson_safe = require "cjson.safe"
 module("hangover", package.seeall, orbit.new)
 local cache = orbit.cache.new(hangover, cache_path)
 tracks = require "lib/model"
+
+
+-- Hangover API
+-- GET   /db
+-- Searches the database
+-- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0)
+-- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
+function get_db(web,...)
+  return json.encode({web.GET, path, tracks:dump()})
+end
+
+-- POST /db
+-- Insert shit in database
+function post_db(web,...)
+  return json.encode({web.POST, path, tracks:dump()})
+end
+
+-- PUT   /db/:id:
+-- Update
+function put_db(web,...)
+  return json.encode({web.GET, path, tracks:dump()})
+end
+-- DELETE /db/:id:
+-- Remove
+function delete_db(web,...)
+  return json.encode({web.GET, path, tracks:dump()})
+end
+-- GET /dayplan/station/(interval)
+-- Get selectors and playlists for interval.
 
 function render( t, content)
   return html {
@@ -21,41 +53,24 @@ function render( t, content)
   }
 end
 
-
+-- land us at our js-fantastic instead of this bull
 function index(web)
-  return render("hello",tracks:dump())
-end
-
-function render_add_track()
-  return render("Add track", html{
-     "something something"
-  })
-end
-
-function render_add_track2()
-  return orbit.web_methods.page("views/add_track")
-end
-
-function view_links(web)
-  return render("web!",html { li{a{ href= web:link("/"), "HOME" }} })
-end
-
-function view_webi(web)
-  return render("web!",  web:page_inline(fooin))
+  return web:redirect("p/test.html")
+  --return render("hello", html{
+  --  li{a{ href= web:link("/"), "HOME" }},
+  --  tracks:dump(),
+  --})
+  --return orbit.web_methods.page("views/add_track")
+  --return render("web!",  web:page_inline(fooin))
 end
 function view_web(web)
   web.script_name = "foo"
   return render("web!",  web:page("views/foo.op"))
   --return render("web!",html { li{a{ href= web:link("/"), "HOME" }} })
 end
-
 -- inline page example
-fooin = [===[
-<html>
-<body>
-<p>Hello Balle!</p>
-<p>I am in $web|real_path, and the script is
-$web|script_name.</p>
+fooin = [===[ <html> <body> <p>Hello Balle!</p>
+<p>I am in $web|real_path, and the script is $web|script_name.</p>
 $lua{[[
 if not web.input.msg then
   web.input.msg = "nothing"
@@ -63,21 +78,20 @@ end
 ]]}
 <p>You passed: $web|input|msg.</p>
 $include{ "bar.op" }
-</body>
-</html>
-]===]
-
+</body> </html>
+]===] 
 hangover:htmlify("render")
-hangover:htmlify("render_add_track")
-hangover:htmlify("view_links")
+--hangover:htmlify("index")
+hangover:htmlify("view_web")
 
-hangover:dispatch_get(index, "/")
-hangover:dispatch_get(render_add_track, "/track")
-hangover:dispatch_get(render_add_track2, "/wtf")
-hangover:dispatch_get(view_web, "/stfu")
-hangover:dispatch_get(view_webi, "/stfui")
-hangover:dispatch_get(view_links, "/lonks")
-hangover:dispatch_get(cache(index), "/post/(%d+)")
+hangover:dispatch_get(view_web, "/web", "/stfu")
+hangover:dispatch_get(index, "/", "/post/(%d+)")
+
+-- the real red meat
+hangover:dispatch_get (get_db, "/db", "/db/.*")
+hangover:dispatch_post(post_db,"/db", "/db/.*")
+hangover:dispatch_put (put_db, "/db/.+")
+hangover:dispatch_delete(delete_db, "/db/.+")
 
 hangover:dispatch_static("/p/.+")
 

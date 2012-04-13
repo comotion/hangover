@@ -1,6 +1,6 @@
 #git clone git://github.com/comotion/hangover
 apt-get install luarocks zlib1g-dev
-luarocks install orbit
+luarocks install orbit lua-cjson
 
 # somethings wrong with the debian headers
 #apt-get install tokyocabinet-bin libtokyocabinet-dev
