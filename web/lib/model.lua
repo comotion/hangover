@@ -1,7 +1,7 @@
 -- MODEL ------------------------
 -- objects:
 --   - track
---     - length - artist - path - id - mood
+--     - stations, length - artist - path - id - mood - {first,last} played, playcount
 --   - selector
 --     - station - name - criteria - mood - happy
 --   - program
@@ -10,33 +10,26 @@
 --   - stations
 --     - name - selector
 ---------------------------------
+-- Goals:
+-- search(track{key=val},sort,limit,paginate)
+-- unique add(artist,track,{key=val})
 
 require "tokyocabinet"
-oh = require "sabot/botlib"
+require "os"
+local u = require "lib/util"
 
 module("tracks", package.seeall)
 
-function tracks:init()
+function tracks:init(file)
+  file = file or "tracks.tch"
   trk = tokyocabinet.tdbnew()
-  if not trk:open("tracks.tch", trk.OWRITER + trk.OCREAT) then
+  if not trk:open(file, trk.OWRITER + trk.OCREAT) then
     ecode = trk:ecode() 
     print("database open error: " .. trk:errmsg(ecode))
   end
 end
 
 tracks:init() 
-
-function tracks:add(art, ttl)
-  pkey = trk:genuid()
-  cols = { artist = art, title = ttl }
-  if not trk:put(pkey, cols) then
-    ecode = trk:ecode()
-    print("Error adding track: " .. trk:errmsg(ecode))
-  else
-    print("Added track:" .. pkey .. ": " .. art.. "-" .. ttl )
-    end
-end
-
 -- fix this stupidity. if you spell the query type wrong, you get nothing, no warnings either.
 local q = tokyocabinet.tdbqrynew(trk)
 local op = {
@@ -65,25 +58,61 @@ local op = {
   negate    = q.QCNEGATE,
   noindex   = q.QCNOIDX,
 }
+local sort = {
+  lexic     = q.QOSTRASC,
+  reverse   = q.QOSTRDESC,
+  increasing= q.QONUMASC,
+  decreasing= q.QONUMDESC,
+}
 
-function tracks:searchtest()
-  q = tokyocabinet.tdbqrynew(trk)
-
-  q:addcond("artist", op.equal, "mordi")
-  res = q:search()
-  c = "tracks: "
-  print (c, oh.dump(res))
-  --for i = 1, #res do
-    --c = c .. "<br>" .. trk:get(res[i])
-  --end
-  --return c
+function tracks:put(pkey,cols)
+  if not trk:put(pkey, cols) then
+    ecode = trk:ecode()
+    return nil,nil,trk:errmsg(ecode)
+  else
+    return pkey, cols
+  end
 end
 
-function tracks:search(query)
+-- tracks must have a name and can have any other tags, passed as table
+-- (artist,track) pair is unique
+-- returns: trackid,entry,error
+function tracks:add(artist,track, cols) 
+  res = tracks:search({artist = artist, track = track},op.equal)
+  u.out(res)
+  if res and res[1] then
+    return tracks:update(res[1],cols)
+  else
+    pkey = trk:genuid()
+  end
+  cols.track  = track
+  cols.artist = artist
+  cols.added  = os.time()
+  return tracks:put(pkey, cols)
+end
+
+-- search within the database
+-- you can specify a entry limit and which page of the
+-- result set you want to receive.
+-- returns array of result id's
+-- FIXME: search query is really (key, val, op) triplet
+-- how to represent this in the API?
+function tracks:search(query, limit, page, order, qop)
   q = tokyocabinet.tdbqrynew(trk)
-  q:addcond("artist", op.phrase, query)
-  res = q:search()
-  return oh.dump(res)
+  qop = qop or op.inclusive
+  order = order or {"added", sort.decreasing}
+  limit = limit or 25
+  page = page or 1
+  skip = (page-1)*limit
+  if type(order) ~= "table" then
+    order = {"added", order}
+  end
+
+  for k,v in pairs(query) do
+    print("added condition: "..k .. " = " .. v)
+    q:addcond(k, qop, v)
+  end
+   return q:search()
 end
 
 function tracks:dump()
@@ -96,27 +125,22 @@ function tracks:dump()
     value = trk:get(key)
     table.insert(accu,value)
   end
-  return oh.dump(accu)
+  return u.dump(accu)
 end
 
-function tracks:get(id)
-  return trk:get(id)
+function tracks:get(pkey)
+  return trk:get(pkey)
 end
 
-function tracks:update(id, cols)
-  p = tracks:get(id)
+function tracks:update(pkey, cols)
+  p = tracks:get(pkey)
+  print ("updating:")
+  u.out(p)
   for k,v in pairs(p) do
     cols[k] = v
   end
-  trk:put(id, cols)
+  cols.updated = os.time()
+  return tracks:put(pkey,cols)
 end
-
---print("TEST SEARCH:")
---print(tracks:searchtest())
---print(tracks:search("mordi"))
---print(tracks:search("world"))
-print("TRACK DUMP:")
-print(tracks:dump())
-
 
 return tracks
