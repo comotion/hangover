@@ -15,4 +15,4 @@ cd bzip2-* && make && make install
 cd tokyocabinet-lua*
 ./configure && make && make install && cd -
 cd web
-[ ! -d sabot ] && git clone git://github.com/comotion/sabot || ( cd sabot && git pull )
+#[ ! -d sabot ] && git clone git://github.com/comotion/sabot || ( cd sabot && git pull )
