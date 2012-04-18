@@ -11,20 +11,6 @@ function join(t, sep)
   return table.concat(t,sep) --> "a,b,c"
 end
 
--- return result with only fields
-function filter(result, fields)
-  local res = {}
-  for k,v in pairs(result) do
-    local one = {}
-    for i,f in pairs(fields) do
-      one[f] = v[f]
-    end
-    res[k] = one
-  end
-  return res
-end
-    
-
 -- dump a table
 function dump(o)
    local s = ''

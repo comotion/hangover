@@ -21,14 +21,14 @@ function get_db(web,...)
   fields = web.GET.fields
   if type(limit) == "table" then limit=limit[1] end
   if type(page) == "table" then page=page[1] end
-  if type(fields) = "table" then fields = u.join(fields) end
+  if type(fields) == "table" then fields = u.join(fields) end
 
   if type(web.GET.q) == "table" then
     -- foo
   end
 
   result = tracks:search(query, limit, page)
-  if fields then result = u.filter(result,u.split(fields)) end
+  if fields then result = tracks.filter(result,u.split(fields)) end
   return json.encode({web.GET, path, result})
 end
 

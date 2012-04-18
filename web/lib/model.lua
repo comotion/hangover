@@ -154,6 +154,19 @@ function tracks:update(pkey, cols)
   return tracks:put(pkey,cols)
 end
 
+-- return result with only fields
+function tracks.filter(result, fields)
+  local res = {}
+  for k,v in pairs(result) do
+    local one = {}
+    for i,f in pairs(fields) do
+      one[f] = v[f]
+    end
+    res[k] = one
+  end
+  return res
+end
+    
 tracks:add("yo","mama", {foo="bar"})
 tracks:add("world","musack", {foo="baz"})
 
