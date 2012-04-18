@@ -81,13 +81,11 @@ end
 -- returns: trackid,entry,error
 function tracks:add(artist,track, cols) 
   cols = cols or {}
-  res = tracks:search({artist = artist, track = track},op.equal)
-  u.out(res)
-  if res and res[1] then
-    return tracks:update(res[1],cols)
-  else
-    pkey = trk:genuid()
+  res = tracks:search({artist = artist, track = track}, op.equal)
+  for i,v in pairs(res) do
+     return tracks:update(i,cols)
   end
+  pkey = trk:genuid()
   cols.track   = track
   cols.artist  = artist
   cols.added   = os.time()
@@ -98,7 +96,7 @@ end
 -- search within the database
 -- you can specify a entry limit and which page of the
 -- result set you want to receive.
--- returns array of result id's
+-- returns array [id]={result}
 -- FIXME: search query is really (key, val, op) triplet
 -- how to represent this in the API?
 function tracks:search(query, limit, page, order, qop)
@@ -112,21 +110,24 @@ function tracks:search(query, limit, page, order, qop)
   if type(order) ~= "table" then
     order = {"added", order}
   end
+  q:setlimit(limit,skip)
 
   for k,v in pairs(query) do
-    print("added condition: "..k .. " = " .. v)
     q:addcond(k, qop, v)
   end
   result = q:search()
-  do return result end
-  -- XXX fuck. return the result set, not just ids
   rset = {}
   for i,v in ipairs(result) do
-    table.insert(rset,tracks:get(result[i]))
+    rawset(rset,v,tracks:get(v))
   end
   return rset
 end
 
+-- search wrapped and simplified
+function tracks:gsearch(query, limit, page)
+  
+end
+  
 function tracks:dump()
   trk:iterinit()
   local key, value, accu
@@ -146,8 +147,6 @@ end
 
 function tracks:update(pkey, cols)
   p = tracks:get(pkey)
-  print ("updating:")
-  u.out(p)
   for k,v in pairs(p) do
     cols[k] = v
   end
@@ -155,8 +154,8 @@ function tracks:update(pkey, cols)
   return tracks:put(pkey,cols)
 end
 
-tracks:add("yo","mama")
-tracks:add("world","musack")
+tracks:add("yo","mama", {foo="bar"})
+tracks:add("world","musack", {foo="baz"})
 
---u.out(tracks:dump())
+u.out(tracks:dump())
 return tracks

@@ -10,26 +10,14 @@ u.out(tracks:add("world", "lftr",{artist="lftr", genre="moody"}))
   --print("  " .. k .. " => " .. v)
 --end
 print("TEST SEARCH:")
+print("search for mordi:")
+u.out(tracks:search({track="mordi"}))
+print("search for world:")
+u.out(tracks:search({track="world"}))
+print("searching for artist world:")
+u.out(tracks:search({artist="world"}))
 print("searching all")
 u.out(tracks:search())
-do return end
-
-print("search for mordi:")
-for k,v in pairs(tracks:search({track="mordi"})) do
-   u.out(tracks:get(v))
-end
-print("search for world:")
-for k,v in pairs(tracks:search({track="world"})) do
-   u.out(tracks:get(v))
-end
-print("searching for artist world:")
-for k,v in pairs(tracks:search({artist="world"})) do
-   u.out(tracks:get(v))
-end
-print("searching all")
-for k,v in pairs(tracks:search()) do
-   u.out(tracks:get(v))
-end
 print("TRACK DUMP:")
 print(tracks:dump())
 
