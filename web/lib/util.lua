@@ -1,10 +1,14 @@
 module("util", package.seeall)
 -- split a string
 function split(str,sep)
-  local sep, fields = sep or ":", {}
+  local sep, fields = sep or ",", {}
   local pattern = string.format("([^%s]+)", sep)
   str:gsub(pattern, function(c) fields[#fields+1] = c end)
   return fields
+end
+function join(t, sep)
+  sep = sep or ","
+  return table.concat(t,sep) --> "a,b,c"
 end
 
 -- return result with only fields

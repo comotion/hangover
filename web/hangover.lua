@@ -16,23 +16,19 @@ local u      = require "lib/util"
 -- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0)
 -- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
 function get_db(web,...)
+  limit = web.GET.maxresults or 25
+  page = web.GET.page or 0
+  fields = web.GET.fields
+  if type(limit) == "table" then limit=limit[1] end
+  if type(page) == "table" then page=page[1] end
+  if type(fields) = "table" then fields = u.join(fields) end
+
   if type(web.GET.q) == "table" then
     -- foo
   end
-  limit = web.GET.maxresults or 25
-  if type(limit) == "table" then
-    limit=limit[1]
-  end
-  page = web.GET.page or 0
-  if type(page) == "table" then
-    page=page[1]
-  end
-  --if type(fields) = "table" then
-  fields = web.GET.fields
-  fields = u.split(fields,',')
 
   result = tracks:search(query, limit, page)
-  if fields then result = u.filter(result,fields) end
+  if fields then result = u.filter(result,u.split(fields)) end
   return json.encode({web.GET, path, result})
 end
 
