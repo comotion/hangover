@@ -16,20 +16,25 @@ local u      = require "lib/util"
 -- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0)
 -- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
 function get_db(web,...)
-  limit = web.GET.maxresults or 25
-  page = web.GET.page or 0
-  fields = web.GET.fields
-  if type(limit) == "table" then limit=limit[1] end
-  if type(page) == "table" then page=page[1] end
+  local query = web.GET.q
+  local limit = web.GET.maxresults or 25
+  local page = web.GET.page or 0
+  local fields = web.GET.fields
+  local qf = web.GET.qf or "artist,title"
+  if type(limit)  == "table" then limit=limit[1] end
+  if type(page)   == "table" then page=page[1] end
   if type(fields) == "table" then fields = u.join(fields) end
+  if type(query)  == "table" then query = u.join(query) end
+  if type(qf)     == "table" then qf = u.join(qf) end
 
-  if type(web.GET.q) == "table" then
-    -- foo
-  end
+  -- query(set by user) is "yo mama 2nd mix mood:boo"
+  query = u.split(query)
+  -- qf(set by js or user) is artist,track,title
+  qf = u.split(qf)
 
-  result = tracks:search(query, limit, page)
+  local result,pages = tracks:gsearch(query, qf, limit, page)
   if fields then result = tracks.filter(result,u.split(fields)) end
-  return json.encode({web.GET, path, result})
+  return json.encode({web.GET, path, result,pages=pages})
 end
 
 -- POST /db

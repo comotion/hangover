@@ -11,8 +11,13 @@
 --     - name - selector
 ---------------------------------
 -- Goals:
--- search(track{key=val},sort,limit,paginate)
 -- unique add(artist,track,{key=val})
+-- search(track{key=val},sort,limit,paginate)
+-- filter to return only specific fields
+-- count total results (or pages)
+-- TODO:
+-- keyword search and tag:val search
+-- station/selector/program storage
 
 require "tokyocabinet"
 require "os"
@@ -23,7 +28,7 @@ module("tracks", package.seeall)
 local default_station = "oslobass"
 
 function tracks:init(file)
-  file = file or "tracks.tch"
+  local file = file or "tracks.tch"
   trk = tokyocabinet.tdbnew()
   if not trk:open(file, trk.OWRITER + trk.OCREAT) then
     ecode = trk:ecode() 
@@ -36,13 +41,14 @@ tracks:init()
 local q = tokyocabinet.tdbqrynew(trk)
 local op = {
   -- string
-  equal     = q.TDBQCSTREQ,
-  inclusive = q.TDBQCSTRSTRINC,
-  begins    = q.TDBQCSTRBW,
-  ends      = q.TDBQCSTREW,
-  all       = q.TDBQCSTRAND,
-  one       = q.TDBQCSTROR,
-  eqone     = q.TDBQCSTROREQ,
+  equal     = q.QCSTREQ,
+  inclusive = q.QCSTRINC,
+  begins    = q.QCSTRBW,
+  ends      = q.QCSTREW,
+  all       = q.QCSTRAND,
+  one       = q.QCSTROR,   -- inclusive or
+  eqone     = q.QCSTROREQ, -- equal or
+  regex     = q.QCSTRRX,
   -- numeric
   eq        = q.QCNUMEQ,
   gt        = q.QCNUMGT,
@@ -80,12 +86,12 @@ end
 -- (artist,track) pair is unique
 -- returns: trackid,entry,error
 function tracks:add(artist,track, cols) 
-  cols = cols or {}
-  res = tracks:search({artist = artist, track = track}, op.equal)
+  local cols = cols or {}
+  local res = tracks:search({artist = artist, track = track},1,1, op.equal)
   for i,v in pairs(res) do
      return tracks:update(i,cols)
   end
-  pkey = trk:genuid()
+  local pkey = trk:genuid()
   cols.track   = track
   cols.artist  = artist
   cols.added   = os.time()
@@ -99,33 +105,44 @@ end
 -- returns array [id]={result}
 -- FIXME: search query is really (key, val, op) triplet
 -- how to represent this in the API?
-function tracks:search(query, limit, page, order, qop)
-  q = tokyocabinet.tdbqrynew(trk)
-  query = query or {station=default_station}
-  limit = limit or 25
-  page = page or 1
-  order = order or {"added", sort.decreasing}
-  qop = qop or op.inclusive
-  skip = (page-1)*limit
-  if type(order) ~= "table" then
-    order = {"added", order}
-  end
-  q:setlimit(limit,skip)
+function tracks:search(query, limit, page, qop, order)
+  local query = query or {station=default_station}
+  local limit = limit or 25
+  local page = page or 1
+  local skip = (page-1)*limit
+  local qop = qop or op.one
+  local order = order or {"added", sort.decreasing}
+  if type(order) ~= "table" then order = {"added", order} end
 
+  q = tokyocabinet.tdbqrynew(trk)
   for k,v in pairs(query) do
+    u.out{k,v,qop}
     q:addcond(k, qop, v)
   end
+  local size = #q:search() -- just to get size
+  q:setlimit(limit,skip)
   result = q:search()
   rset = {}
   for i,v in ipairs(result) do
     rawset(rset,v,tracks:get(v))
   end
-  return rset
+  return rset,size/limit
 end
 
--- search wrapped and simplified
-function tracks:gsearch(query, limit, page)
-  
+-- keyword search, wrapped and simplified
+--- build a query list from query and fieldlist
+-- XXX :
+  -- need to launch metaquery which takes union of searches
+  -- foreach field in fieldlist search(field=query, op.one)
+function tracks:gsearch(q, qf, limit, page)
+  local query = {}
+  for i,field in pairs(qf) do
+    for j,search in pairs(q) do
+      query[field] = search
+    end
+  end
+    
+  return tracks:search(query, limit, page)
 end
   
 function tracks:dump()
