@@ -20,6 +20,8 @@ local u = require "lib/util"
 
 module("tracks", package.seeall)
 
+local default_station = "oslobass"
+
 function tracks:init(file)
   file = file or "tracks.tch"
   trk = tokyocabinet.tdbnew()
@@ -78,6 +80,7 @@ end
 -- (artist,track) pair is unique
 -- returns: trackid,entry,error
 function tracks:add(artist,track, cols) 
+  cols = cols or {}
   res = tracks:search({artist = artist, track = track},op.equal)
   u.out(res)
   if res and res[1] then
@@ -85,9 +88,10 @@ function tracks:add(artist,track, cols)
   else
     pkey = trk:genuid()
   end
-  cols.track  = track
-  cols.artist = artist
-  cols.added  = os.time()
+  cols.track   = track
+  cols.artist  = artist
+  cols.added   = os.time()
+  cols.station = cols.station or default_station
   return tracks:put(pkey, cols)
 end
 
@@ -99,10 +103,11 @@ end
 -- how to represent this in the API?
 function tracks:search(query, limit, page, order, qop)
   q = tokyocabinet.tdbqrynew(trk)
-  qop = qop or op.inclusive
-  order = order or {"added", sort.decreasing}
+  query = query or {station=default_station}
   limit = limit or 25
   page = page or 1
+  order = order or {"added", sort.decreasing}
+  qop = qop or op.inclusive
   skip = (page-1)*limit
   if type(order) ~= "table" then
     order = {"added", order}
@@ -112,7 +117,14 @@ function tracks:search(query, limit, page, order, qop)
     print("added condition: "..k .. " = " .. v)
     q:addcond(k, qop, v)
   end
-   return q:search()
+  result = q:search()
+  do return result end
+  -- XXX fuck. return the result set, not just ids
+  rset = {}
+  for i,v in ipairs(result) do
+    table.insert(rset,tracks:get(result[i]))
+  end
+  return rset
 end
 
 function tracks:dump()
@@ -143,4 +155,8 @@ function tracks:update(pkey, cols)
   return tracks:put(pkey,cols)
 end
 
+tracks:add("yo","mama")
+tracks:add("world","musack")
+
+--u.out(tracks:dump())
 return tracks

@@ -15,7 +15,7 @@ tracks = require "lib/model"
 -- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0)
 -- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
 function get_db(web,...)
-  return json.encode({web.GET, path, tracks:dump()})
+  return json.encode({web.GET, path, tracks:search()})
 end
 
 -- POST /db
