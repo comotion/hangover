@@ -13,7 +13,7 @@ local u      = require "lib/util"
 -- Hangover API
 -- GET   /db
 -- Searches the database
--- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0)
+-- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0) (qf=artist,title,mood)
 -- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
 function get_db(web,...)
   local query = web.GET.q
@@ -23,14 +23,15 @@ function get_db(web,...)
   local qf = web.GET.qf or "artist,title"
   if type(limit)  == "table" then limit=limit[1] end
   if type(page)   == "table" then page=page[1] end
+  -- join these so they split nicely later;to avoid pathology
   if type(fields) == "table" then fields = u.join(fields) end
   if type(query)  == "table" then query = u.join(query) end
   if type(qf)     == "table" then qf = u.join(qf) end
 
-  -- query(set by user) is "yo mama 2nd mix mood:boo"
-  query = u.split(query)
-  -- qf(set by js or user) is artist,track,title
-  qf = u.split(qf)
+  if not query then
+    return json.encode{tracks:search()}
+  end
+  -- qf(set by js or user) is artist,track,album etc
 
   local result,pages = tracks:gsearch(query, qf, limit, page)
   if fields then result = tracks.filter(result,u.split(fields)) end

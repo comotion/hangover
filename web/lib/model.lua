@@ -1,7 +1,7 @@
 -- MODEL ------------------------
 -- objects:
 --   - track
---     - stations, length - artist - path - id - mood - {first,last} played, playcount
+--     - stations, length - artist - title - path - id - mood - {first,last} played, playcount
 --   - selector
 --     - station - name - criteria - mood - happy
 --   - program
@@ -82,17 +82,17 @@ function tracks:put(pkey,cols)
   end
 end
 
--- tracks must have a name and can have any other tags, passed as table
+-- tracks must have a name, can have table of other tags
 -- (artist,track) pair is unique
 -- returns: trackid,entry,error
-function tracks:add(artist,track, cols) 
+function tracks:add(artist,title, cols) 
   local cols = cols or {}
-  local res = tracks:search({artist = artist, track = track},1,1, op.equal)
+  local res = tracks:search({artist = artist, title = title},1,1, op.equal)
   for i,v in pairs(res) do
      return tracks:update(i,cols)
   end
   local pkey = trk:genuid()
-  cols.track   = track
+  cols.title   = title
   cols.artist  = artist
   cols.added   = os.time()
   cols.station = cols.station or default_station
@@ -100,11 +100,8 @@ function tracks:add(artist,track, cols)
 end
 
 -- search within the database
--- you can specify a entry limit and which page of the
--- result set you want to receive.
+-- you can specify limit and page number
 -- returns array [id]={result}
--- FIXME: search query is really (key, val, op) triplet
--- how to represent this in the API?
 function tracks:search(query, limit, page, qop, order)
   local query = query or {station=default_station}
   local limit = limit or 25
@@ -120,30 +117,64 @@ function tracks:search(query, limit, page, qop, order)
     q:addcond(k, qop, v)
   end
   local size = #q:search() -- just to get size
-  q:setlimit(limit,skip)
+  q:setorder(unpack(order))
+  q:setlimit(limit, skip)
   result = q:search()
-  rset = {}
-  for i,v in ipairs(result) do
-    rawset(rset,v,tracks:get(v))
-  end
-  return rset,size/limit
+  return tracks.fill(result),math.floor(size/limit)+1
 end
 
--- keyword search, wrapped and simplified
---- build a query list from query and fieldlist
--- XXX :
-  -- need to launch metaquery which takes union of searches
-  -- foreach field in fieldlist search(field=query, op.one)
+function tracks.fill(result)
+  local rset = {}
+  for i,v in ipairs(result) do
+    --u.out{i,v,tracks:get(v)}
+    rawset(rset,v,tracks:get(v))
+  end
+  return rset
+end
+
+-- search for query in all queryfields
+-- honour queries like "foo bar tag:value"
+-- TODO: page,limit,size (merge into :search?)
 function tracks:gsearch(q, qf, limit, page)
-  local query = {}
-  for i,field in pairs(qf) do
-    for j,search in pairs(q) do
-      query[field] = search
+  local queries = {}
+  local tokens = u.split(q,', ')
+  local qf = u.split(qf)
+  local qry
+
+  -- collect terms
+  local accu = {}
+  local tags = {}
+  for i,v in pairs(tokens) do
+    t = u.split(v,':')
+    if #t > 1 then
+      tags[t[1]] = t[2]
+    else
+      table.insert(accu, v)
     end
   end
-    
-  return tracks:search(query, limit, page)
+
+  -- create one search per field
+  for j,f in pairs(qf) do
+    local q = tokyocabinet.tdbqrynew(trk)
+    for t,v in pairs(tags) do
+      a = u.split(v,',')
+      if #a > 1 then
+        q:addcond(t,op.one,v)
+      else
+        q:addcond(t,op.inclusive,v)
+      end
+    end
+    if #accu > 0 then
+      u.out(accu)
+      q:addcond(f,op.one,u.join(accu))
+    end
+    table.insert(queries,q)
+  end
+  -- pull out last query and execute on it
+  qry = table.remove(queries)
+  return tracks.fill(qry:metasearch(queries,qry.MSUNION))
 end
+  
   
 function tracks:dump()
   trk:iterinit()
