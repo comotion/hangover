@@ -1,0 +1,50 @@
+Grumble grumble searches mumble
+"keyword search, wrapped and simplified"
+ build a query list from query and fieldlist
+
+-- FIXME: search query is really (key, val, op) triplet
+-- how to represent this in the API?
+
+What is intuitive search? 
+
+users query is "yo mama 2nd mix mood:boo,blah,bar"
+
+search should return all matches where:
+  station:bass /  mood:boo / tag:something matches AND
+  any of the search tags matches any of the query phrases
+
+with the (hard to realize) restriction that
+
+"yo mama 2nd mix" should match "yo mama - 2nd mix"
+and even "the2ndmix - mamayo"
+
+but not (inclusive or phrase search)
+"yo yo ma - mix" and "mix mayo - yo" nor "yomamas mix" nor "2ndmix - yo"
+ie every token should be in the result!
+
+hard to realize because we can only launch searches on tags not groups of tags
+EITHER 
+- need to launch metaquery which takes union of searches
+- can union (x or y), intersect(x and y) or set difference(x not y)
+- foreach field in fieldlist search(field=query, op.one)
+
+a b foo:bar
+search for
+  t:a
+      a:a
+     U= all tracks with t:{a,b} or a:{a,b},
+      so also t:a a:a and t:b a:b and t:f a:a
+  !t:a !t:b  so t:f a:a
+  !a:a !a:b  so t:ab
+     I= all tracks with  t:!a and t:!b and a!a and a!b
+   fuck!!
+  ]]
+-- OR 
+  -- create extra field that is artist,title,other default search fields
+-- OR 
+  -- post-filter the search to remove entries that don't include all tokens
+
+we have opted for just doing metasearches at the cost of less intuitive searches
+
+for now.
+
