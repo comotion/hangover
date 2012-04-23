@@ -127,7 +127,7 @@ function tracks.fill(result)
   local rset = {}
   for i,v in ipairs(result) do
     --u.out{i,v,tracks:get(v)}
-    rawset(rset,v,tracks:get(v))
+    rawset(rset,tonumber(v),tracks:get(v))
   end
   return rset
 end
@@ -136,6 +136,10 @@ end
 -- honour queries like "foo bar tag:value"
 -- TODO: page,limit,size (merge into :search?)
 function tracks:gsearch(q, qf, limit, page)
+  local limit = limit or 25
+  local page = page or 1
+  local skip = (page-1)*limit
+
   local queries = {}
   local tokens = u.split(q,', ')
   local qf = u.split(qf)
@@ -172,7 +176,10 @@ function tracks:gsearch(q, qf, limit, page)
   end
   -- pull out last query and execute on it
   qry = table.remove(queries)
-  return tracks.fill(qry:metasearch(queries,qry.MSUNION))
+  qry:setorder("added",sort.decreasing)
+  local pages = math.floor(#qry:metasearch(queries,qry.MSUNION)/limit)+1
+  qry:setlimit(limit, skip)
+  return tracks.fill(qry:metasearch(queries,qry.MSUNION)),pages
 end
   
   

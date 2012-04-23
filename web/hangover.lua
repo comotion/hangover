@@ -29,13 +29,15 @@ function get_db(web,...)
   if type(qf)     == "table" then qf = u.join(qf) end
 
   if not query then
-    return json.encode{tracks:search()}
+     local result,pages = tracks:search()
+     if fields then result = tracks.filter(result,u.split(fields)) end
+    return json.encode{result=result,pages=pages}
   end
   -- qf(set by js or user) is artist,track,album etc
 
   local result,pages = tracks:gsearch(query, qf, limit, page)
   if fields then result = tracks.filter(result,u.split(fields)) end
-  return json.encode({web.GET, path, result,pages=pages})
+  return json.encode{result=result,pages=pages}
 end
 
 -- POST /db
