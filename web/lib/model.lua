@@ -1,7 +1,10 @@
 -- MODEL ------------------------
 -- objects:
 --   - track
---     - stations, length - artist - title - path - id - mood - {first,last} played, playcount
+--     - stations, length - artist - title - path
+--     - id - mood - played list, playcount
+--   - playlist
+--     - sequential list of tracks to play
 --   - selector
 --     - station - name - criteria - mood - happy
 --   - program
@@ -37,7 +40,8 @@ function tracks:init(file)
 end
 
 tracks:init() 
--- fix this stupidity. if you spell the query type wrong, you get nothing, no warnings either.
+-- fix this stupidity. if you spell the query type wrong,
+-- you get no warnings, nothing.
 local q = tokyocabinet.tdbqrynew(trk)
 local op = {
   -- string
@@ -113,7 +117,6 @@ function tracks:search(query, limit, page, qop, order)
 
   q = tokyocabinet.tdbqrynew(trk)
   for k,v in pairs(query) do
-    u.out{k,v,qop}
     q:addcond(k, qop, v)
   end
   local size = #q:search() -- just to get size
@@ -126,7 +129,6 @@ end
 function tracks.fill(result)
   local rset = {}
   for i,v in ipairs(result) do
-    --u.out{i,v,tracks:get(v)}
     rawset(rset,tonumber(v),tracks:get(v))
   end
   return rset
@@ -169,7 +171,6 @@ function tracks:gsearch(q, qf, limit, page)
       end
     end
     if #accu > 0 then
-      u.out(accu)
       q:addcond(f,op.one,u.join(accu))
     end
     table.insert(queries,q)
@@ -181,7 +182,6 @@ function tracks:gsearch(q, qf, limit, page)
   qry:setlimit(limit, skip)
   return tracks.fill(qry:metasearch(queries,qry.MSUNION)),pages
 end
-  
   
 function tracks:dump()
   trk:iterinit()
@@ -221,9 +221,10 @@ function tracks.filter(result, fields)
   end
   return res
 end
-    
+
 tracks:add("yo","mama", {foo="bar"})
 tracks:add("world","musack", {foo="baz"})
 
 u.out(tracks:dump())
 return tracks
+
