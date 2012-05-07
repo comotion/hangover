@@ -28,19 +28,20 @@ function get_db(web,...)
   if type(query)  == "table" then query = u.join(query) end
   if type(qf)     == "table" then qf = u.join(qf) end
 
-  if not query then
-     local result,pages = tracks:search()
-     if fields then result = tracks.filter(result,u.split(fields)) end
-    return json.encode{result=result,pages=pages}
+  local result, pages
+  if not query then -- merge search() and gsearch() sometime?
+    result,pages = tracks:search()
+  else
+    result,pages = tracks:gsearch(query, qf, limit, page)
   end
 
-  local result,pages = tracks:gsearch(query, qf, limit, page)
   if fields then
-     result = tracks.filter(result,u.split(fields))
+    fields = u.split(fields)
+    result = tracks.filter(result, fields)
   else
-     fields = util.get_keys(result);
-   end
-  return json.encode{fields=fields,result=result,pages=pages}
+    fields = tracks.fields(result);
+  end
+  return json.encode{fields=fields,pages=pages,result=result}
 end
 
 -- POST /db
@@ -49,8 +50,8 @@ end
 function post_db(web,...)
   local input = json.decode(web.input.post_data)
   if not input.artist or not input.title then
-     web.status = 501
-     return "Not enough"
+    web.status = 501
+    return "Not enough"
   end
   return tracks:add(input.artist,input.title,input)
 end
@@ -62,7 +63,7 @@ function put_db(web,...)
   local input = web.input.post_data
   u.out(input)
   if input then
-     input = json.decode(input)
+    input = json.decode(input)
   end
   return tracks:update(id, input)
 end

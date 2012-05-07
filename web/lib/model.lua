@@ -126,6 +126,21 @@ function tracks:search(query, limit, page, qop, order)
   return tracks.fill(result),math.floor(size/limit)+1
 end
 
+function tracks.fields(result)
+  local fset = {}
+  for _,t in ipairs(result) do
+    for k,v in pairs(t) do
+      fset[k] = true
+    end
+  end
+  local rset = {}
+  for k,v in pairs(fset) do
+    table.insert(rset,k)
+  end
+  return rset
+end
+
+
 function tracks.fill(result)
   local rset = {}
   for i,v in ipairs(result) do
@@ -136,7 +151,6 @@ end
 
 -- search for query in all queryfields
 -- honour queries like "foo bar tag:value"
--- TODO: page,limit,size (merge into :search?)
 function tracks:gsearch(q, qf, limit, page)
   local limit = limit or 25
   local page = page or 1
@@ -197,7 +211,9 @@ function tracks:dump()
 end
 
 function tracks:get(pkey)
-  return trk:get(pkey)
+  local track = trk:get(pkey)
+  track.id = pkey
+  return track
 end
 
 function tracks:update(pkey, cols)
