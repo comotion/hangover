@@ -33,7 +33,7 @@ end
 
 function get_keys(thing)
    if type(thing) == "table" then
-      local res = []
+      local res = {}
       for k,_ in pairs(thing) do
          table.insert(res,k)
       end
