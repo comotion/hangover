@@ -1,3 +1,4 @@
+#!/usr/local/bin/orbit
 local orbit = require "orbit"
 local ocash = require "orbit.cache"
 local json  = require "cjson"
@@ -9,11 +10,10 @@ local cache  = orbit.cache.new(hangover, cache_path)
 local tracks = require "lib/model"
 local u      = require "lib/util"
 
-
 -- Hangover API
 -- GET   /db
 -- Searches the database
--- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0)
+-- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0) (qf=artist,title,mood)
 -- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
 function get_db(web,...)
   local query = web.GET.q
@@ -23,34 +23,53 @@ function get_db(web,...)
   local qf = web.GET.qf or "artist,title"
   if type(limit)  == "table" then limit=limit[1] end
   if type(page)   == "table" then page=page[1] end
+  -- join these so they split nicely later;to avoid pathology
   if type(fields) == "table" then fields = u.join(fields) end
   if type(query)  == "table" then query = u.join(query) end
   if type(qf)     == "table" then qf = u.join(qf) end
 
-  -- query(set by user) is "yo mama 2nd mix mood:boo"
-  query = u.split(query)
-  -- qf(set by js or user) is artist,track,title
-  qf = u.split(qf)
+  if not query then
+     local result,pages = tracks:search()
+     if fields then result = tracks.filter(result,u.split(fields)) end
+    return json.encode{result=result,pages=pages}
+  end
 
   local result,pages = tracks:gsearch(query, qf, limit, page)
-  if fields then result = tracks.filter(result,u.split(fields)) end
-  return json.encode({web.GET, path, result,pages=pages})
+  if fields then
+     result = tracks.filter(result,u.split(fields))
+  else
+     fields = util.get_keys(result);
+   end
+  return json.encode{fields=fields,result=result,pages=pages}
 end
 
 -- POST /db
 -- Insert shit in database
+-- returns: trackid or error
 function post_db(web,...)
-  return json.encode({web.POST, path, tracks:dump()})
+  local input = json.decode(web.input.post_data)
+  if not input.artist or not input.title then
+     web.status = 501
+     return "Not enough"
+  end
+  return tracks:add(input.artist,input.title,input)
 end
 
 -- PUT   /db/:id:
 -- Update
 function put_db(web,...)
-  return json.encode({web.GET, path, tracks:dump()})
+  local id = ...
+  local input = web.input.post_data
+  u.out(input)
+  if input then
+     input = json.decode(input)
+  end
+  return tracks:update(id, input)
 end
 -- DELETE /db/:id:
 -- Remove
-function delete_db(web,...)
+function del_db(web,...)
+  local id = ...
   return json.encode({web.GET, path, tracks:dump()})
 end
 -- GET /dayplan/station/(interval)
@@ -107,10 +126,10 @@ hangover:dispatch_get(view_web, "/web", "/stfu")
 hangover:dispatch_get(index, "/", "/post/(%d+)")
 
 -- the real red meat
-hangover:dispatch_get (get_db, "/db", "/db/.*")
-hangover:dispatch_post(post_db,"/db", "/db/.*")
-hangover:dispatch_put (put_db, "/db/.+")
-hangover:dispatch_delete(delete_db, "/db/.+")
+hangover:dispatch_get   (get_db, "/db/?")
+hangover:dispatch_post  (post_db,"/db/?")
+hangover:dispatch_put   (put_db, "/db/(%d+)")
+hangover:dispatch_delete(del_db, "/db/(%d+)")
 
 hangover:dispatch_static("/p/.+")
 

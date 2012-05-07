@@ -3,7 +3,7 @@ module("util", package.seeall)
 function split(str,sep)
   local sep, fields = sep or ",", {}
   local pattern = string.format("([^%s]+)", sep)
-  str:gsub(pattern, function(c) fields[#fields+1] = c end)
+  string.gsub(str,pattern, function(c) fields[#fields+1] = c end)
   return fields
 end
 function join(t, sep)
@@ -29,6 +29,17 @@ end
 -- helpers
 function out(thing)
    print(dump(thing))
+end
+
+function get_keys(thing)
+   if type(thing) == "table" then
+      local res
+      for k,_ in pairs(thing) do
+         table.insert(res,k)
+      end
+      return res
+   end
+   return nil
 end
 -- log to file
 function log_line(file, line)
