@@ -35,8 +35,12 @@ function get_db(web,...)
   end
 
   local result,pages = tracks:gsearch(query, qf, limit, page)
-  if fields then result = tracks.filter(result,u.split(fields)) end
-  return json.encode{result=result,pages=pages}
+  if fields then
+     result = tracks.filter(result,u.split(fields))
+  else
+     fields = util.get_keys(result);
+   end
+  return json.encode{fields=fields,result=result,pages=pages}
 end
 
 -- POST /db
