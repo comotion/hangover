@@ -17,10 +17,10 @@
       <div class="navbar-inner">
         <div class="container">
           <a class="brand">hangover</a>
-          <ul class="nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#">Database</a></li>
-            <li><a href="#">Schedule</a></li>
+          <ul id="navbar" class="nav">
+            <li><a href="#!home">Home</a></li>
+            <li><a href="#!database">Database</a></li>
+            <li><a href="#!schedule">Schedule</a></li>
             <li class="divider-vertical"> </li>
             <form class="navbar-search">
               <input type="text" class="search-query" placeholder="Quick Search">
@@ -47,20 +47,15 @@
     </div>
 
     <div class="container">
-        <div class="hero-unit">
-          <h1>Welcome to hangover!</h1>
-          <p><strong>This instance is currently serving two stations, 420 341 songs and 5 active users.</strong></a>
-          <p>If this is your first time using hangover you might want to look at the <a href="#nope">Quick Start Guide</a>, but since that hasn't been written yet - maybe you just want try and find the <a href="#hahano">Documentation</a>.</p>
-        </div>
+      <div id="content"></div>
     </div>
 
 
-    <script src="js/jquery.min.js"></script>
+    <script src="js/fis/jquery-1.7.1.js"></script>
+    <script src="js/fis/jquerymx-3.2.custom.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/bootstrap-dropdown.js"></script>
-    <script>
-      $('.dropdown-toggle').dropdown()
-    </script>
+    <script src="js/hangover.js"></script>
   </body>
 </html>
 
