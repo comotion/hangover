@@ -3,6 +3,9 @@ apt-get install luarocks zlib1g-dev
 luarocks install orbit
 luarocks install lua-cjson
 
+# patch orbit
+sed -i 's/\[\%w_\]/[%_w]/g' /usr/local/share/lua/5.1/orbit/model.lua
+
 # somethings wrong with the debian headers
 #apt-get install tokyocabinet-bin libtokyocabinet-dev
 [ -d bzip2-1.0.6 ] || wget http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz -qO - | tar xzf -

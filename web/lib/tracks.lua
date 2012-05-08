@@ -28,8 +28,6 @@ local u = require "lib/util"
 
 module("tracks", package.seeall)
 
-local default_station = "oslobass"
-
 function tracks:init(file)
   local file = file or "tracks.tch"
   trk = tokyocabinet.tdbnew()
@@ -248,7 +246,6 @@ end
 
 tracks:add("yo","mama", {foo="bar"})
 tracks:add("world","musack", {foo="baz"})
-
-u.out(tracks:dump())
+u.out("fapfapfap", tracks:dump())
 return tracks
 

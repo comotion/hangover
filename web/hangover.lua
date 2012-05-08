@@ -3,11 +3,15 @@ local orbit = require "orbit"
 local ocash = require "orbit.cache"
 local json  = require "cjson"
 json.encode_invalid_numbers = true
--- local cjson2 = cjson.new()
--- local cjson_safe = require "cjson.safe"
+-- local cjson2 = cjson.new() -- is thread safer
+-- local cjson_safe = require "cjson.safe" -- arf on error instead of barfing
+
+-- globally default station
+default_station = "oslobass"
+
 module("hangover", package.seeall, orbit.new)
-local cache  = orbit.cache.new(hangover, cache_path)
-local tracks = require "lib/model"
+local cache  = ocash.new(hangover, cache_path)
+local tracks = require "lib/tracks"
 local u      = require "lib/util"
 
 -- Hangover API
@@ -45,8 +49,8 @@ end
 function post_db(web,...)
   local input = json.decode(web.input.post_data)
   if not input.artist or not input.title then
-    web.status = 501
-    return "Not enough"
+    web.status = 423
+    return "Not enough, try harder."
   end
   return tracks:add(input.artist,input.title,input)
 end
@@ -70,6 +74,26 @@ function del_db(web,...)
 end
 -- GET /dayplan/station/(interval)
 -- Get selectors and playlists for interval.
+function get_dayplan(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+function get_next(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+function get_end(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+function get_meta(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
 
 function render( t, content)
   return html {
@@ -90,33 +114,12 @@ end
 -- land us at our js-fantastic instead of this bull
 function index(web)
   return web:redirect("p/test.html")
-  --return render("hello", html{
-  --  li{a{ href= web:link("/"), "HOME" }},
-  --  tracks:dump(),
-  --})
-  --return orbit.web_methods.page("views/add_track")
-  --return render("web!",  web:page_inline(fooin))
 end
 function view_web(web)
   web.script_name = "foo"
   return render("web!",  web:page("views/foo.op"))
-  --return render("web!",html { li{a{ href= web:link("/"), "HOME" }} })
 end
--- inline page example
-fooin = [===[ <html> <body> <p>Hello Balle!</p>
-<p>I am in $web|real_path, and the script is $web|script_name.</p>
-$lua{[[
-if not web.input.msg then
-  web.input.msg = "nothing"
-end
-]]}
-<p>You passed: $web|input|msg.</p>
-$include{ "bar.op" }
-</body> </html>
-]===] 
 hangover:htmlify("render")
---hangover:htmlify("index")
-hangover:htmlify("view_web")
 
 hangover:dispatch_get(view_web, "/web", "/stfu")
 hangover:dispatch_get(index, "/", "/post/(%d+)")
@@ -126,6 +129,10 @@ hangover:dispatch_get   (get_db, "/db/?")
 hangover:dispatch_post  (post_db,"/db/?")
 hangover:dispatch_put   (put_db, "/db/(%d+)")
 hangover:dispatch_delete(del_db, "/db/(%d+)")
+hangover:dispatch_get   (get_next, "/next/?", "/next/(%w+)")
+hangover:dispatch_get   (get_end, "/end/?", "/end/(%w+)")
+hangover:dispatch_get   (get_meta, "/meta/?", "/meta/(%w+)")
+hangover:dispatch_get   (get_dayplan, "/dayplan/?", "/dayplan/(%w+)")
 
 hangover:dispatch_static("/p/.+")
 
