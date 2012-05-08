@@ -22,7 +22,7 @@ hangover.not_found = function (web)
 end                  
 hangover.server_error = function (web, msg)                                                                                  
   web.status = "500 Something died"
-  io.stderr:write("Oh noes! ".. msg.. u.dump(web))
+  io.stderr:write("G U R U M E D I A T I O N\n", msg, u.dump(web), "\n-- \n")
   msg = "Something died, sorry. Death is a natural part of life."
   return [[<html><head><title>Server Error</title></head>
   <body><pre>]] .. msg .. [[</pre></body></html>]]
