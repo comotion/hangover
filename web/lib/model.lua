@@ -91,7 +91,7 @@ end
 -- returns: trackid,entry,error
 function tracks:add(artist,title, cols) 
   local cols = cols or {}
-  local res = tracks:search({artist = artist, title = title},1,1, op.equal)
+  local res = tracks:search{artist = artist, title = title}
   for i,v in pairs(res) do
      return tracks:update(i,cols)
   end
@@ -103,18 +103,9 @@ function tracks:add(artist,title, cols)
   return tracks:put(pkey, cols)
 end
 
--- search within the database
--- you can specify limit and page number
--- returns array [id]={result}
-function tracks:search(query, limit, page, qop, order)
+function tracks:ssearch(query, limit, page, qop, order)
   local query = query or {station=default_station}
-  local limit = limit or 25
-  local page = page or 1
-  local skip = (page-1)*limit
-  local qop = qop or op.one
-  local order = order or {"added", sort.decreasing}
-  if type(order) ~= "table" then order = {"added", order} end
-
+  local qop = qop or op.equal
   q = tokyocabinet.tdbqrynew(trk)
   for k,v in pairs(query) do
     q:addcond(k, qop, v)
@@ -122,8 +113,27 @@ function tracks:search(query, limit, page, qop, order)
   local size = #q:search() -- just to get size
   q:setorder(unpack(order))
   q:setlimit(limit, skip)
-  result = q:search()
-  return tracks.fill(result),math.floor(size/limit)+1
+  return q:search(),math.floor(size/limit)+1
+end
+
+-- search within the database
+-- you can specify limit and page number
+-- returns array [id]={result}
+function tracks:search(query, qf, limit, page, qop, order)
+  local limit = limit or 25
+  local page = page or 1
+  local skip = (page-1)*limit
+  local order = order or {"added", sort.decreasing}
+  if type(order) ~= "table" then order = {"added", order} end
+  if query == "" then query = {} end
+
+  local result, pages
+  if type(query) == "table" then
+    result,pages = tracks:ssearch(query, limit, page, qop, order)
+  else
+    result,pages = tracks:gsearch(query, qf, limit, page, order)
+  end
+  return tracks.fill(result),pages
 end
 
 function tracks.fields(result)
@@ -151,11 +161,8 @@ end
 
 -- search for query in all queryfields
 -- honour queries like "foo bar tag:value"
-function tracks:gsearch(q, qf, limit, page)
-  local limit = limit or 25
-  local page = page or 1
-  local skip = (page-1)*limit
-
+-- todo: filter out results that don't match whole query
+function tracks:gsearch(q, qf, limit, page, order)
   local queries = {}
   local tokens = u.split(q,', ')
   local qf = u.split(qf)
@@ -185,16 +192,17 @@ function tracks:gsearch(q, qf, limit, page)
       end
     end
     if #accu > 0 then
-      q:addcond(f,op.one,u.join(accu))
+      print("adding condition: " .. u.join(accu))
+      q:addcond(f,op.onetoken,u.join(accu))
     end
     table.insert(queries,q)
   end
   -- pull out last query and execute on it
   qry = table.remove(queries)
-  qry:setorder("added",sort.decreasing)
+  qry:setorder(unpack(order))
   local pages = math.floor(#qry:metasearch(queries,qry.MSUNION)/limit)+1
   qry:setlimit(limit, skip)
-  return tracks.fill(qry:metasearch(queries,qry.MSUNION)),pages
+  return qry:metasearch(queries,qry.MSUNION),pages
 end
   
 function tracks:dump()

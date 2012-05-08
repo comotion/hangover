@@ -16,7 +16,7 @@ local u      = require "lib/util"
 -- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0) (qf=artist,title,mood)
 -- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
 function get_db(web,...)
-  local query = web.GET.q
+  local query = web.GET.q or {}
   local limit = web.GET.maxresults or 25
   local page = web.GET.page or 0
   local fields = web.GET.fields
@@ -28,12 +28,7 @@ function get_db(web,...)
   if type(query)  == "table" then query = u.join(query) end
   if type(qf)     == "table" then qf = u.join(qf) end
 
-  local result, pages
-  if not query then -- merge search() and gsearch() sometime?
-    result,pages = tracks:search()
-  else
-    result,pages = tracks:gsearch(query, qf, limit, page)
-  end
+  local result, pages = tracks:search(query, qf, limit, page)
 
   if fields then
     fields = u.split(fields)
