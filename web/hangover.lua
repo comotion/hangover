@@ -13,6 +13,20 @@ module("hangover", package.seeall, orbit.new)
 local cache  = ocash.new(hangover, cache_path)
 local tracks = require "lib/tracks"
 local u      = require "lib/util"
+local io = require "io"
+
+hangover.not_found = function (web)
+  web.status = "404 Not Found"
+  return [[<html><head><title>Not Found</title></head>
+  <body><p>Not found! Try harder you nit</p></body></html>]]
+end                  
+hangover.server_error = function (web, msg)                                                                                  
+  web.status = "500 Something died"
+  io.stderr:write("Oh noes! ".. msg.. u.dump(web))
+  msg = "Something died, sorry. Death is a natural part of life."
+  return [[<html><head><title>Server Error</title></head>
+  <body><pre>]] .. msg .. [[</pre></body></html>]]
+end
 
 -- Hangover API
 -- GET   /db
@@ -94,6 +108,9 @@ function get_meta(web, ...)
   -- only god knows yet
   return json.encode({web.GET, path, tracks:dump()})
 end
+function get_fail(web, ...)
+  a = fail[d] + f
+end
 
 function render( t, content)
   return html {
@@ -133,6 +150,7 @@ hangover:dispatch_get   (get_next, "/next/?", "/next/(%w+)")
 hangover:dispatch_get   (get_end, "/end/?", "/end/(%w+)")
 hangover:dispatch_get   (get_meta, "/meta/?", "/meta/(%w+)")
 hangover:dispatch_get   (get_dayplan, "/dayplan/?", "/dayplan/(%w+)")
+hangover:dispatch_get   (get_fail, "/fail/?")
 
 hangover:dispatch_static("/p/.+")
 
