@@ -54,7 +54,7 @@ function get_db(web,...)
   else
     fields = tracks.fields(result);
   end
-  return json.encode{fields=fields,pages=pages,result=result}
+  return json.encode{{fields=fields,pages=pages,result=result}}
 end
 
 -- POST /db
