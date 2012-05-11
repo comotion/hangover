@@ -1,38 +1,37 @@
-<div class="row">
-  <div class="span3">
-    <div class="row">
-      <form class="well form-search">
-        <h3>Search</h3>
-        <fieldset>
-          <input type="text" class="search-query">
-          <div class="control-group">
-            <div class="controls">
-            <label class="control-label">Kjønnsorgan</label>
-              <select>
-                <option>Penis</option>
-              </select>
 
-            <div class="controls">
-              <input type="checkbox"> Whatever</input>
-              <input type="checkbox"> Whatever</input>
-            </div>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary">Search</button>
+
+<div class="row-fluid">
+  <div class="span3">
+    <!-- Sidebar -->
+
+    <!-- Search -->
+    <div class="row-fluid">
+      <h3>Search</h3>
+      <form class="well form-search">
+        <fieldset class="control-group">
+          <input type="text" class="search" id="query"></input>
         </fieldset>
+        <button type="submit" class="btn btn-primary" id="search">Search</button>
+      </form>
+    </div> 
+
+    <!-- External search -->
+    <!-- Upload -->
+    <div class="row-fluid">
+      <h3>Upload</h3>
+      <form class="well form-search" method="post" action="/db">
+      <fieldset>
+        <input type="file" name="file" />
+        <button type="submit" class="btn btn-danger">Upload!</button>
+      </fieldset>
       </form>
     </div>
-  
+
+    <!-- End sidebar -->
   </div>
+
+
   <div class="span9">
-    <table class="table table-striped table-bordered">
-
-      
-      <th>what</th><th>what</th>
-      <tr>      
-      <td>hei</td>
-      </tr>
-    </table>
-
+    <div id="searchresult"></div>
   </div>
 </div>

@@ -22,14 +22,22 @@ $.Model('Tracks', {
 });
 
 var tracks = new Tracks;
-Tracks.findAll({});
 
-$.Controller("TracksController", {
+$.Controller("search", {
   init : function(el) {
     console.log("trackscontrol");
   },
-
+  "click": function(el) {
+    var query={q: $('#query', el.parent()).val()};
+    Tracks.findAll(query, function(result) {
+      var r = result[0];
+      console.log(r);
+      $("#searchresult").html($.View("tmpl/searchresult.ejs", r));
+    });
+  }
 });
+
+
 
 $.route(":page", {page: "home"});
 
@@ -39,6 +47,11 @@ $.route.bind('change', function(ev, attr, how, newval, oldval) {
     $("#navbar").find(".active").removeClass("active");
     $("#navbar li a[href='#!"+page+"']").parent().addClass("active")
     $("#content").html($.View("tmpl/" + page + ".ejs"));
+  
+    switch(newval) {
+      case "database":
+        $("#search").search();
+    }
   }
 });
 
