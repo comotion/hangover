@@ -15,12 +15,12 @@ end
 function dump(o)
   local s = ''
   if type(o) == 'table' then
-    s = '{ '
+    s = "\n{ "
     for k,v in pairs(o) do
       s = s .. k .. " = ".. dump(v)
       if i ~= #o then s = s .. '; ' end
     end
-    s = s .. ' }\n'
+    s = s .. ' }'
   else
     s = tostring(o)
   end
