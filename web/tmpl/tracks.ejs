@@ -3,13 +3,15 @@
   <% fields.forEach(function(f){ %>
     <th><%= f %></th>
   <% }); %>
+    <th></th>
   </tr>
 
   <% result.forEach(function(r){ %>
-  <tr>
+  <tr>  <!-- TODO: make dragable -->
     <% fields.forEach(function(f){ %>
       <td><%= r[f] %></td>
     <% }); %>
+    <td><a onclick="play(<%= r['id'] %>)">play</a></td>
   </tr>
   <% }); %> 
     </table>
