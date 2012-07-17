@@ -61,12 +61,14 @@ end
 -- Insert shit in database
 -- returns: trackid or error
 function post_db(web,...)
-  local input = json.decode(web.input.post_data)
-  if not input.artist or not input.title then
-    web.status = 423
-    return "Not enough, try harder."
+  local input = web.POST
+  if not input.file and not input.artist and not input.title then
+    web.status = "400 Not enough, try harder."
   end
-  return tracks:add(input.artist,input.title,input)
+  -- attempt id3 extraction TODO
+  tracks:add(input.artist,input.title,input)
+    
+  return web:redirect("/#!database/edit/2")
 end
 
 -- PUT   /db/:id:
@@ -130,7 +132,10 @@ end
 
 -- land us at our js-fantastic instead of this bull
 function index(web)
-  return web:redirect("p/test.html")
+--  return web:redirect("p/index.html")
+--  return render("web!",  web:page("views/index.op"))
+--  web.script_name = "index"
+  return web:page("views/index.op")
 end
 function view_web(web)
   web.script_name = "foo"
@@ -152,7 +157,10 @@ hangover:dispatch_get   (get_meta, "/meta/?", "/meta/(%w+)")
 hangover:dispatch_get   (get_dayplan, "/dayplan/?", "/dayplan/(%w+)")
 hangover:dispatch_get   (get_fail, "/fail/?")
 
-hangover:dispatch_static("/p/.+")
+hangover:dispatch_static("/css/.+")
+hangover:dispatch_static("/js/.+")
+hangover:dispatch_static("/img/.+")
+hangover:dispatch_static("/tmpl/.+")
 
 return _M
 

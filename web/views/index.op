@@ -22,9 +22,11 @@
             <li><a href="#!database">Database</a></li>
             <li><a href="#!schedule">Schedule</a></li>
             <li class="divider-vertical"> </li>
-            <form class="navbar-search">
-              <input type="text" class="search-query" placeholder="Quick Search">
+            <!--
+            <form class="navbar-search">  LOPRI make work 
+              <input type="text" id="query" class="search-query" placeholder="Quick Search">
             </form>
+            -->
           </ul>
           <ul class="nav pull-right">
             <li><a><i class="icon-music"></i> &hearts;</a></li>
@@ -50,7 +52,8 @@
       <div id="content"></div>
     </div>
 
-
+    <!-- TODO: make pull up clipboard -->
+    
     <script src="js/jquery-1.7.1.js"></script>
     <script src="js/jquerymx-3.2.custom.js"></script>
     <script src="js/bootstrap.js"></script>
