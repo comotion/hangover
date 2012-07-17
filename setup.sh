@@ -1,6 +1,9 @@
 #!/bin/sh
 #git clone git://github.com/comotion/hangover
 os=`uname -o`
+olddir=`pwd`
+mkdir -p inst
+cd inst
 
 case $os in
 	*BSD)
@@ -24,21 +27,28 @@ case $os in
 		make install
 		cd -
 		;;
-	Linux)
+	*Linux)
 		dist=`lsb_release -si`
 		case $dist in
 			Debian|Ubuntu)
-				apt-get install luarocks zlib1g-dev liquidsoap liquidsoap-plugin-lame
+				apt-get install luarocks zlib1g-dev liquidsoap liquidsoap-plugin-lame libbz2-dev
 				# somethings wrong with the debian headers
 				#apt-get install tokyocabinet-bin libtokyocabinet-dev
 
-				[ -d bzip2-1.0.6 ] || wget http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz -qO - | tar xzf -
-				cd bzip2-* 
-				make && make install
-				cd -
+				#[ -d bzip2-1.0.6 ] || wget http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz -qO - | tar xzf -
+				#cd bzip2-* 
+				#make && make install
+				#cd -
 
 				[ -d tokyocabinet-1.4.47 ] || wget http://fallabs.com/tokyocabinet/tokyocabinet-1.4.47.tar.gz -qO - | tar xzf -
 				cd tokyocabinet-1.4.47 && ./configure && make ;make install
+				cd -
+				[ -d tokyocabinet-lua-1.10 ] || wget http://fallabs.com/tokyocabinet/luapkg/tokyocabinet-lua-1.10.tar.gz -qO - | tar xzf -
+				cd tokyocabinet-lua*
+				#./configure CFLAGS='-I/usr/local/include/lua51 -I/usr/local/include -std=c99 -fPIC'
+				#make CFLAGS='-I/usr/local/include/lua51 -I/usr/local/include -std=c99 -fPIC'
+				./configure && make
+				make install
 				cd -
 				;;
 			*)
@@ -56,5 +66,5 @@ sed -i 's/\[\%w_\]/[%_w]/g' /usr/local/share/lua/5.1/orbit/model.lua
 
 
 
-cd web
+cd $olddir/web
 #[ ! -d sabot ] && git clone git://github.com/comotion/sabot || ( cd sabot && git pull )
