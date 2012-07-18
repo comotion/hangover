@@ -87,15 +87,13 @@ end
 -- tracks must have a name, can have table of other tags
 -- (artist,track) pair is unique
 -- returns: trackid,entry,error
-function tracks:add(artist,title, cols) 
+function tracks:add(cols) 
   local cols = cols or {}
-  local res = tracks:search{artist = artist, title = title}
+  local res = tracks:search{artist = cols.artist, title = cols.title}
   for i,v in pairs(res) do
      return tracks:update(i,cols)
   end
   local pkey = trk:genuid()
-  cols.title   = title
-  cols.artist  = artist
   cols.added   = os.time()
   cols.station = cols.station or default_station
   return tracks:put(pkey, cols)
@@ -162,6 +160,7 @@ end
 -- todo: filter out results that don't match whole query
 function tracks:gsearch(q, qf, limit, page, order)
   local queries = {}
+  q,qf = q or '', qf or ''
   local tokens = u.split(q,', ')
   local qf = u.split(qf)
   local qry
@@ -244,8 +243,8 @@ function tracks.filter(result, fields)
   return res
 end
 
-tracks:add("yo","mama", {foo="bar"})
-tracks:add("world","musack", {foo="baz"})
+tracks:add({artist="yo",title="mama",foo="bar"})
+tracks:add( {artist="world",title="musack", foo="baz"})
 u.out("fapfapfap", tracks:dump())
 return tracks
 

@@ -66,6 +66,7 @@ $.Controller("search", {
   }
 });
 
+$.route(":page/:action/:id");
 $.route(":page", {page: "home"});
 
 $.route.bind('change', function(ev, attr, how, newval, oldval) {
@@ -78,8 +79,10 @@ $.route.bind('change', function(ev, attr, how, newval, oldval) {
       case "database":
         switch(ev['target']['action']) {
           case "edit":
-            var entry = db.findOne(ev['target']['id']);
-            $("#content").html($.View("tmpl/database_edit.ejs") );
+            db.findOne({id: ev['target']['id']}, function(result) {   
+              var r = result[0]; // FIXME sort 
+              $("#content").html($.View("tmpl/database_edit.ejs", {entry: r}));
+            });
             break; // edit
           default:
             $("#content").html($.View("tmpl/" + page + ".ejs"));

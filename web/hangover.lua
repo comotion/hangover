@@ -34,6 +34,9 @@ end
 -- Arguments: q=[query] (fields=title,artist) (maxresults=40) (page=0) (qf=artist,title,mood)
 -- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
 function get_db(web,...)
+  if web.GET.id then
+    return json.encode{tracks:get(web.GET.id)}
+  end
   local query = web.GET.q or {}
   local limit = web.GET.maxresults or 25
   local page = web.GET.page or 0
@@ -61,14 +64,21 @@ end
 -- Insert shit in database
 -- returns: trackid or error
 function post_db(web,...)
-  local input = web.POST
-  if not input.file and not input.artist and not input.title then
-    web.status = "400 Not enough, try harder."
-  end
-  -- attempt id3 extraction TODO
-  tracks:add(input.artist,input.title,input)
-    
-  return web:redirect("/#!database/edit/2")
+  local id = web.POST.id
+  local cols = {}
+  if id then
+    tracks:put(id,web.POST)
+  else
+     local input = web.input
+     if not input.file and not input.artist and not input.title then
+       web.status = "400 Not enough, try harder."
+     end
+     -- attempt id3 extraction TODO
+     print(u.join(input))
+     id,cols = tracks:add(input)
+   end
+       
+  return web:redirect("/#!database/edit/"..id)
 end
 
 -- PUT   /db/:id:

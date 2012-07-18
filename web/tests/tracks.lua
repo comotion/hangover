@@ -1,11 +1,11 @@
 #!/usr/bin/lua
-require "lib/model"
+require "lib/tracks"
 local u = require "lib/util"
 print("init:")
 tracks:init("test.tch")
 print("add:")
-u.out(tracks:add("world", "mordi", {length=42, foo="bar"}))
-u.out(tracks:add("world", "lftr",{artist="lftr", genre="moody"}))
+u.out(tracks:add({artist="world", title="mordi", length=42, foo="bar"}))
+u.out(tracks:add({artist="world", title="lftr", genre="moody"}))
 --for k,v in ipairs(cols) do
   --print("  " .. k .. " => " .. v)
 --end
