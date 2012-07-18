@@ -24,56 +24,16 @@
 
 require "tokyocabinet"
 require "os"
+local db = require "lib/tokyo"
 local u = require "lib/util"
 
 module("tracks", package.seeall)
 
 function tracks:init(file)
-  local file = file or "tracks.tch"
-  trk = tokyocabinet.tdbnew()
-  if not trk:open(file, trk.OWRITER + trk.OCREAT) then
-    ecode = trk:ecode() 
-    print("database open error: " .. trk:errmsg(ecode))
-  end
+  return tokyo:init("tracks")
 end
 
-tracks:init() 
--- fix this stupidity. if you spell the query type wrong,
--- you get no warnings, nothing.
-local q = tokyocabinet.tdbqrynew(trk)
-local op = {
-  -- string
-  equal     = q.QCSTREQ,
-  inclusive = q.QCSTRINC,
-  begins    = q.QCSTRBW,
-  ends      = q.QCSTREW,
-  all       = q.QCSTRAND,
-  one       = q.QCSTROR,   -- inclusive or
-  eqone     = q.QCSTROREQ, -- equal or
-  regex     = q.QCSTRRX,
-  -- numeric
-  eq        = q.QCNUMEQ,
-  gt        = q.QCNUMGT,
-  ge        = q.QCNUMGE,
-  lt        = q.QCNUMLT,
-  le        = q.QCNUMLE,
-  tween     = q.QCNUMBT,
-  numor     = q.QCNUMOREQ,
-  -- fulltext
-  phrase    = q.QCFTSPH,
-  alltokens = q.QCFTSAND,
-  onetoken  = q.QCFTSOR,
-  compound  = q.QCFTSEX,
-  -- flags
-  negate    = q.QCNEGATE,
-  noindex   = q.QCNOIDX,
-}
-local sort = {
-  lexic     = q.QOSTRASC,
-  reverse   = q.QOSTRDESC,
-  increasing= q.QONUMASC,
-  decreasing= q.QONUMDESC,
-}
+trk = tracks:init() 
 
 function tracks:put(pkey,cols)
   if not trk:put(pkey, cols) then
@@ -101,7 +61,7 @@ end
 
 function tracks:ssearch(query, limit, page, qop, order)
   local query = query or {station=default_station}
-  local qop = qop or op.equal
+  local qop = qop or db.op.equal
   q = tokyocabinet.tdbqrynew(trk)
   for k,v in pairs(query) do
     q:addcond(k, qop, v)
@@ -119,9 +79,9 @@ function tracks:search(query, qf, limit, page, qop, order)
   local limit = limit or 25
   local page = page or 1
   local skip = (page-1)*limit
-  local order = order or {"added", sort.decreasing}
+  local order = order or {"added", db.sort.decreasing}
   if type(order) ~= "table" then order = {"added", order} end
-  if query == "" then query = {} end
+  if not query or query == "" then query = {} end
 
   local result, pages
   if type(query) == "table" then
@@ -183,14 +143,14 @@ function tracks:gsearch(q, qf, limit, page, order)
     for t,v in pairs(tags) do
       a = u.split(v,',')
       if #a > 1 then
-        q:addcond(t,op.one,v)
+        q:addcond(t,db.op.one,v)
       else
-        q:addcond(t,op.inclusive,v)
+        q:addcond(t,db.op.inclusive,v)
       end
     end
     if #accu > 0 then
       print("adding condition: " .. u.join(accu))
-      q:addcond(f,op.onetoken,u.join(accu))
+      q:addcond(f,db.op.onetoken,u.join(accu))
     end
     table.insert(queries,q)
   end
