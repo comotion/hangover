@@ -1,19 +1,19 @@
 #!/usr/local/bin/orbit
 local orbit = require "orbit"
 local ocash = require "orbit.cache"
-local json  = require "cjson"
+local cjson  = require "cjson.safe" -- arf on error instead of barfing
+local json = cjson.new() -- is thread safer
 json.encode_invalid_numbers = true
--- local cjson2 = cjson.new() -- is thread safer
--- local cjson_safe = require "cjson.safe" -- arf on error instead of barfing
-
--- globally default station
-default_station = "oslobass"
 
 module("hangover", package.seeall, orbit.new)
 local cache  = ocash.new(hangover, cache_path)
 local tracks = require "lib/tracks"
 local u      = require "lib/util"
-local io = require "io"
+local io     = require "io"
+local md5    = require "md5"
+
+require "config"
+local user = "badface" -- XXX: basic auth/user db
 
 hangover.not_found = function (web)
   web.status = "404 Not Found"
@@ -64,20 +64,42 @@ end
 -- Insert shit in database
 -- returns: trackid or error
 function post_db(web,...)
-  local id = web.POST.id
-  local cols = {}
-  if id then
+  local id, file, t = web.POST.id, web.POST.file, {}
+  if file then -- someone is uploading a mix
+    t.user = user
+    t.submitted = os.time()
+    t.filename = file.name
+    -- XXX: mayhap we shouldn't accept anything other than audio/?
+    t.contenttype = string.gsub(string.gsub(file['content-type'], "audio",""), "/","")
+    local dest,tname = u.open_temp_file(temp_dir.."/hangover_up@@@")
+    local bytes = file.contents
+    if not dest then
+      return json.encode{{status="fail",reason="bad tempfile, baad"}}
+    end
+    dest:write(bytes)
+    dest:close()
+    print("["..os.date("%c", t.submitted).. "] '"..t.filename.."' -> "..tname)
+    print("'"..t.filename .. "'".." " .. os.difftime(os.time(), t.submitted).."s")
+    t.md5 = u.bintohex(md5.sum(bytes))
+    local destname = t.md5..t.contenttype -- krav's pathless filename
+    t.path = tracks_path .. "/" .. destname
+    local rc, err = os.rename(tname, t.path)
+    if not rc then
+       return json.encode{{status="fail", reason=err}}
+    end
+    print("'"..destname.. "'".." " .. os.difftime(os.time(), t.submitted).."s")
+    -- TODO attempt id3 extraction / file metadata
+    -- add to database, tags and all
+    id = tracks:add(t)
+    -- redirect to tag editor (what of multiple files?)
+    return json.encode{tracks=t,id=id}
+  elseif id then -- just editing the node
     tracks:put(id,web.POST)
-  else
-     local input = web.input
-     if not input.file and not input.artist and not input.title then
-       web.status = "400 Not enough, try harder."
-     end
-     -- attempt id3 extraction TODO
-     print(u.join(input))
-     id,cols = tracks:add(input)
-   end
-       
+  else -- not an upload, we have no id-ea
+    web.status = 400
+    return "Not enough, try harder."
+  end
+
   return web:redirect("/#!database/edit/"..id)
 end
 

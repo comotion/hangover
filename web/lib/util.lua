@@ -52,4 +52,32 @@ function log_line(file, line)
   io.stderr:write("wrote line!\n")
 end
 
+-- open a tempfile
+function open_temp_file(template)
+   local handle
+   local fname
+   assert(string.match(template, "@@@"), 
+      "ERROR open_temp_file: template must contain \"@@@\".")
+   while true do
+      fname = string.gsub(template, "@@@", tostring(math.random(10000000,99999999)))
+      handle = io.open(fname, "r")
+      if not handle then
+         handle = io.open(fname, "w")
+         break
+      end
+      io.close(handle)
+      --io.write(".")   -- Shows collision, comment out except for diagnostics
+   end
+   return handle, fname
+end
+
+-- convert to hex
+function bintohex(s)
+  return (s:gsub('(.)', function(c)
+    return string.format('%02x', string.byte(c))
+  end))
+end
+
+
 return _M
+

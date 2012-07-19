@@ -44,15 +44,10 @@ function tracks:put(pkey,cols)
   end
 end
 
--- tracks must have a name, can have table of other tags
--- (artist,track) pair is unique
+-- can have table of tags
 -- returns: trackid,entry,error
 function tracks:add(cols) 
   local cols = cols or {}
-  local res = tracks:search{artist = cols.artist, title = cols.title}
-  for i,v in pairs(res) do
-     return tracks:update(i,cols)
-  end
   local pkey = trk:genuid()
   cols.added   = os.time()
   cols.station = cols.station or default_station
