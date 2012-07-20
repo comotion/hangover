@@ -1,10 +1,18 @@
+Hangover - radio playout system
 
-- lag default selecta
+                 Random picker_
+  <harbour.live     \ >  hangover.liq --> stereotool | 
+  <mixq             |     icecast:8888/in = output.liq harbor
+  <request.dynamic /      		\-> out.file
+  <get_next      _/      		 \-> out.ice
+ 	   /program   + 		        \-> out.dabplus |
+                                   icecast:8000/dab |
+                                   mplayer | enc | nc sender..
+
 ---
 - enkelt html5 lydredigeringsprog
 - adressere track på tid
 fading v programmerbare tider
-
 
 definere program obiekt
 mest spesifikke spiller
