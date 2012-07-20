@@ -31,7 +31,8 @@ case $os in
 		dist=`lsb_release -si`
 		case $dist in
 			Debian|Ubuntu)
-				apt-get install luarocks zlib1g-dev liquidsoap liquidsoap-plugin-lame libbz2-dev
+				apt-get install luarocks zlib1g-dev liquidsoap libbz2-dev
+				apt-get install liquidsoap-plugin-lame
 				# somethings wrong with the debian headers
 				#apt-get install tokyocabinet-bin libtokyocabinet-dev
 
@@ -58,8 +59,12 @@ case $os in
 		esac
 
 esac
-luarocks install orbit
-luarocks install lua-cjson
+
+for module in orbit lua-cjson lua-iconv md5
+do 
+   luarocks install $module
+done
+
 
 # patch orbit
 sed -i 's/\[\%w_\]/[%_w]/g' /usr/local/share/lua/5.1/orbit/model.lua
