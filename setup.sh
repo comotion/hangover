@@ -9,17 +9,17 @@ case $os in
 	*BSD)
 		pkg_add -r git gmake
 		cd /usr/ports/lang/lua && make && make install
-    cd /usr/ports/audio/liquidsoap && make && make install
+		cd /usr/ports/audio/liquidsoap && make && make install
 		cd /usr/src && [ -d luarocks ] || 
-	 		# git clone git://github.com/keplerproject/luarocks.git
-			# until they merge my pull request
-	 		git clone git://github.com/comotion/luarocks.git
+		# git clone git://github.com/keplerproject/luarocks.git
+		# until they merge my pull request
+		git clone git://github.com/comotion/luarocks.git
 
 		cd luarocks && ./configure --with-lua-include=/usr/local/include/lua51 && make && make install
 		cd -
-    [ -d tokyocabinet-1.4.47 ] || wget http://fallabs.com/tokyocabinet/tokyocabinet-1.4.47.tar.gz -qO - | tar xzf -
-    cd tokyocabinet-1.4.47 && ./configure && make ;make install
-    cd -
+		[ -d tokyocabinet-1.4.47 ] || wget http://fallabs.com/tokyocabinet/tokyocabinet-1.4.47.tar.gz -qO - | tar xzf -
+		cd tokyocabinet-1.4.47 && ./configure && make ;make install
+		cd -
 		[ -d tokyocabinet-lua-1.10 ] || wget http://fallabs.com/tokyocabinet/luapkg/tokyocabinet-lua-1.10.tar.gz -qO - | tar xzf -
 		cd tokyocabinet-lua*
 		./configure CFLAGS='-I/usr/local/include/lua51 -I/usr/local/include -std=c99 -fPIC'
@@ -46,8 +46,6 @@ case $os in
 				cd -
 				[ -d tokyocabinet-lua-1.10 ] || wget http://fallabs.com/tokyocabinet/luapkg/tokyocabinet-lua-1.10.tar.gz -qO - | tar xzf -
 				cd tokyocabinet-lua*
-				#./configure CFLAGS='-I/usr/local/include/lua51 -I/usr/local/include -std=c99 -fPIC'
-				#make CFLAGS='-I/usr/local/include/lua51 -I/usr/local/include -std=c99 -fPIC'
 				./configure && make
 				make install
 				cd -
@@ -64,12 +62,11 @@ for module in orbit lua-cjson lua-iconv md5
 do 
    luarocks install $module
 done
-
+# until I can get this rockified
+[ -d $olddir/web/lib/lamt ] && cd $olddir/web/lib && git clone git://github.com/comotion/lamt
 
 # patch orbit
 sed -i 's/\[\%w_\]/[%_w]/g' /usr/local/share/lua/5.1/orbit/model.lua
 
-
-
 cd $olddir/web
-#[ ! -d sabot ] && git clone git://github.com/comotion/sabot || ( cd sabot && git pull )
+
