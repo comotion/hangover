@@ -1,5 +1,9 @@
 -- PROGRAM -----------------
 --
+--   - program
+--     - station - start - stop - selector - items
+--     - recurring -> weekly, daily, blank
+
 -- the station plan consists of overlapping programs
 -- each program has a period
 -- eg every Monday at 12 or 13 May 00:00
@@ -7,23 +11,20 @@
 -- 
 -- a program has
 -- { id, name, [selector, playlist]}
-require "tokyocabinet"
 require "os"
 require "math"
-local u   = require "lib/util"
-local ndp = require "lib/ndp/ndp"
+local db  = require "lib.tokyo"
+local u   = require "lib.util"
 
 module("program", package.seeall)
 
-prg = tokyo:init("programs")
+function program:init()
+  return tokyo:init("programs")
+end
+prg = tokyo:init()
 
 function program:put(pkey,cols)
-  if not prg:put(pkey, cols) then
-    ecode = prg:ecode()
-    return nil,nil,prg:errmsg(ecode)
-  else
-    return pkey, cols
-  end
+  return tokyo:put(prg,pkey,cols)
 end
 
 -- a program has a human-friendly name, 
@@ -36,9 +37,7 @@ function program:add(name, startdate, time, duration, every, X)
   p.startday = startdate
   p.time = time
   p.duration = duration
-  if 
-  
-  
+end
 
 -- when asked to compile a plan,
 -- we find all programs for given time
