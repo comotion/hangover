@@ -18,9 +18,6 @@
 -- search(track{key=val},sort,limit,paginate)
 -- filter to return only specific fields
 -- count total results (or pages)
--- TODO:
--- keyword search and tag:val search
--- station/selector/program storage
 
 require "os"
 local db = require "lib/tokyo"
@@ -28,19 +25,14 @@ local u = require "lib/util"
 
 module("tracks", package.seeall)
 
-function tracks:init(file)
+function tracks:init()
   return tokyo:init("tracks")
 end
 
-trk = tracks:init() 
+local trk  = tracks:init()
 
 function tracks:put(pkey,cols)
-  if not trk:put(pkey, cols) then
-    ecode = trk:ecode()
-    return nil,nil,trk:errmsg(ecode)
-  else
-    return pkey, cols
-  end
+  return tokyo.put(trk, pkey, cols)
 end
 
 -- can have table of tags

@@ -15,8 +15,19 @@ function tokyo:init(name)
     ecode = db:ecode() 
     print("database open error: " .. db:errmsg(ecode))
   end
+  print("opened db:"..file)
   return db
 end
+
+function tokyo.put(db, pkey, cols)
+  if not db:put(pkey, cols) then
+    ecode = trk:ecode()
+    return nil,nil,db:errmsg(ecode)
+  else
+    return pkey, cols
+  end
+end
+
 
 db = tokyo:init()
 
