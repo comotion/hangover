@@ -22,7 +22,6 @@
 -- keyword search and tag:val search
 -- station/selector/program storage
 
-require "tokyocabinet"
 require "os"
 local db = require "lib/tokyo"
 local u = require "lib/util"
@@ -75,7 +74,7 @@ function tracks:search(query, qf, limit, page, qop, order)
   local page = page or 1
   local skip = (page-1)*limit
   local order = order or {"added", db.sort.decreasing}
-  if type(order) ~= "table" then order = {"added", order} end
+  if type(order) ~= "table" then order = {order, db.sort.increasing} end
   if not query or query == "" then query = {} end
 
   local result, pages

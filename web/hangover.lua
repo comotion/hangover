@@ -3,6 +3,7 @@ local orbit = require "orbit"
 local ocash = require "orbit.cache"
 local cjson  = require "cjson.safe" -- arf on error instead of barfing
 local json = cjson.new() -- is thread safer
+local convert, ratio, safe = json.encode_sparse_array(true)
 json.encode_invalid_numbers = true
 
 module("hangover", package.seeall, orbit.new)
@@ -127,10 +128,83 @@ function get_dayplan(web, ...)
   -- only god knows yet
   return json.encode({web.GET, path, tracks:dump()})
 end
-function get_next(web, ...)
+
+-- POST /playlist/
+function post_playlist(web, ...)
   station = ... or default_station
   -- only god knows yet
   return json.encode({web.GET, path, tracks:dump()})
+end
+function get_playlist(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+function put_playlist(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+-- PUT /playlist/:id:
+-- [{id={blah}},..]}
+function put_playlist(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+
+-- POST /selecta/:id:
+-- [{q=drit,w=1,100},{..}]
+function post_selecta(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+function get_selecta(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+function put_selecta(web, ...)
+  station = ... or default_station
+  -- only god knows yet
+  return json.encode({web.GET, path, tracks:dump()})
+end
+-- GET /program/:id:
+-- {name:blah, selector=:id:, start:time, end:time, playlist:[{id={songid,etc}},..]}
+function get_program(web, ...)
+  local id = ... or nil
+  if not id then
+    web.status = "404 Not Found"
+    return ""
+  end
+end
+
+-- GET /plan?from=time,to=time
+-- [{program, fra, til, pri},{}
+-- returns all overlapping programs in time period,
+-- with priorities (re: most specific match wins)
+function get_plan(web, ...)
+  station = ... or default_station
+  local from = web.GET.from or 'now'
+  local to = web.GET.to or 'now'
+
+  programs = program:search(from, to)
+  return json.encode{programs}
+end
+
+-- GET /next/:station:?time=now
+-- returns the path to the next song to play.
+-- finds the current plan, specific program and in that
+-- program selects the next song
+function get_next(web, ...)
+  station = ... or default_station
+  local station = ... or default_station
+  -- pick a random unplayed track
+  local result = tracks:search('', "path", 1, nil, "played")
+  result = tracks.filter(result, {"path", "title"})
+  return result[1].title
+  --return json.encode(result[1])
 end
 function get_end(web, ...)
   station = ... or default_station
@@ -187,6 +261,13 @@ hangover:dispatch_get   (get_next, "/next/?", "/next/(%w+)")
 hangover:dispatch_get   (get_end, "/end/?", "/end/(%w+)")
 hangover:dispatch_get   (get_meta, "/meta/?", "/meta/(%w+)")
 hangover:dispatch_get   (get_dayplan, "/dayplan/?", "/dayplan/(%w+)")
+hangover:dispatch_get   (get_program, "/program/(%w+)", "/program/?")
+hangover:dispatch_get   (get_plan, "/plan/?", "/plan/(%w+)")
+hangover:dispatch_get   (get_playlist, "/playlist/?", "/playlist/(%d+)")
+hangover:dispatch_get   (get_selecta, "/selecta/?", "/selecta/(%d+)")
+hangover:dispatch_put   (put_selecta, "/selecta/?", "/selecta/(%d+)")
+hangover:dispatch_post  (post_selecta, "/selecta/?", "/selecta/(%d+)")
+
 hangover:dispatch_get   (get_fail, "/fail/?")
 
 hangover:dispatch_static("/css/.+")
