@@ -1,3 +1,4 @@
+#!/usr/bin/env lua
 module("getracks",package.seeall)
 --id3 = require "lamt.mpeg" -- ffi doesnt work
 --id3 = require "lib.meta.id321" -- id3v2 cant get all tags

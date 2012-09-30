@@ -12,6 +12,7 @@ local tracks = require "lib/tracks"
 local u      = require "lib/util"
 local io     = require "io"
 local md5    = require "md5"
+local meta   = require "metadata"
 
 require "config"
 local user = "badface" -- XXX: basic auth/user db
@@ -89,9 +90,10 @@ function post_db(web,...)
        return json.encode{{status="fail", reason=err}}
     end
     print("'"..destname.. "'".." " .. os.difftime(os.time(), t.submitted).."s")
-    -- TODO attempt id3 extraction / file metadata
+    -- id3 extraction / file metadata -- TODO: expand tags into t
+    t.tag = meta.gettags(t.path)
     -- add to database, tags and all
-    id = tracks:add(t)
+    id = tracks:add(t, tag)
     -- redirect to tag editor (what of multiple files?)
     return json.encode{tracks=t,id=id}
   elseif id then -- just editing the node
