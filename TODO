@@ -1,10 +1,12 @@
 
 What to do and how:
 
-  - get_next:
+- get_next:
     knows about silences, metadata, can queue songs
     knows about shows & jingles
     knows playtime, repeat count and can warn
+    knows the song will play
+   something skips to next to keep schedules
  * get_end: increment played
  * get_meta: metadata for current song
   - metadata switchover
@@ -12,6 +14,31 @@ What to do and how:
  * get_program: what is playing, when?
  * ls: next (song, metadata, timecode)
   - ls<->hangover<->irc
+
+station is a selector and a timeline
+one timeline per station (account for multitrack stuff later)
+=actualized program for given timeperiod is set of program:<start,end,{transitions}>
+while preserving the most-specific-match-first principle for precedence.
+   program is set of selectors and playlists.
+
+top-down example:
+{ station: oslo bass radio,
+  selector: { random{all songs}}
+  timeline: {
+     program:morn {{ 5h-14h}, selector: morning songs},
+     program:midd {{14h-21h}, selector: midday songs},
+     program:eve  {{21h-04h}, selector: evening songs},
+     program:schizo pinguino {sundays 12}, selector: playlist: {show 1, jingle 2, blah 3}}
+     program: keystone jingle {every 34 min}, selector: {tag: jingles},
+     program: live spot { switch to feed blah at {button / time } if available
+} 
+how to prevent jingles cutting shows?
+  - create strict rules of precedence
+    .never played before
+    .shorter is better
+    ."strict start/stop? / transitions"
+    .overlaid? (strict but doesnt cut)
+    .force people to PLAN. if your show runs overtime, and there is a new show after, well, you were warned.
 
 interface coding:
   create program {name= time= endtime= owner=}
