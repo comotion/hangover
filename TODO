@@ -1,10 +1,10 @@
 
 What to do and how:
 
- * parse audio metadata into the db
- * get_next: random tagged audio
-  - get_next knows about silences, metadata, can queue songs
-  - get_next knows about shows
+  - get_next:
+    knows about silences, metadata, can queue songs
+    knows about shows & jingles
+    knows playtime, repeat count and can warn
  * get_end: increment played
  * get_meta: metadata for current song
   - metadata switchover
@@ -14,8 +14,13 @@ What to do and how:
   - ls<->hangover<->irc
 
 interface coding:
-  search -> playlist builder
-         -> selector builder -> example playlist -> "realized playlist"
+  create program {name= time= endtime= owner=}
+  search tracks
+     -> track tagger/editor
+     -> 
+
+     -> playlist builder
+     -> selector builder -> example playlist -> "realized playlist"
                ^
      program builder \
                ||     live show scheduler
