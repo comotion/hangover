@@ -8,11 +8,11 @@ json.encode_invalid_numbers = true
 
 module("hangover", package.seeall, orbit.new)
 local cache  = ocash.new(hangover, cache_path)
-local tracks = require "lib/tracks"
-local u      = require "lib/util"
+local tracks = require "lib.tracks"
+local u      = require "lib.util"
 local io     = require "io"
 local md5    = require "md5"
-local meta   = require "metadata"
+local meta   = require "lib.metadata"
 
 require "config"
 local user = "badface" -- XXX: basic auth/user db
@@ -62,40 +62,52 @@ function get_db(web,...)
   return json.encode{{fields=fields,pages=pages,result=result}}
 end
 
+function getfile(file)
+  t.user = user
+  t.submitted = os.time()
+  t.filename = file.name
+  -- XXX: mayhap we shouldn't accept anything other than audio/?
+  t.contenttype = string.gsub(string.gsub(file['content-type'], "audio",""), "/","")
+  local dest,tname = u.open_temp_file(temp_dir.."/hangover_up@@@")
+  local bytes = file.contents
+  if not dest then
+    return nil,json.encode{{status="fail",reason="bad tempfile, baad"}}
+  end
+  -- for progress we need chunking and status
+  dest:write(bytes)
+  dest:close()
+  print("["..os.date("%c", t.submitted).. "] '"..t.filename.."' -> "..tname)
+  print("'"..t.filename .. "'".." " .. os.difftime(os.time(), t.submitted).."s")
+t.md5 = u.bintohex(md5.sum(bytes))
+  local destname = t.md5..t.contenttype -- krav's pathless filename
+  t.path = tracks_path .. "/" .. destname
+  local rc, err = os.rename(tname, t.path)
+  if not rc then
+    return nil, json.encode{{status="fail", reason=err}}
+  end
+  print("'"..destname.. "'".." " .. os.difftime(os.time(), t.submitted).."s")
+  return t
+end
+
 -- POST /db
 -- Insert shit in database
 -- returns: trackid or error
 function post_db(web,...)
   local id, file, t = web.POST.id, web.POST.file, {}
   if file then -- someone is uploading a mix
-    t.user = user
-    t.submitted = os.time()
-    t.filename = file.name
-    -- XXX: mayhap we shouldn't accept anything other than audio/?
-    t.contenttype = string.gsub(string.gsub(file['content-type'], "audio",""), "/","")
-    local dest,tname = u.open_temp_file(temp_dir.."/hangover_up@@@")
-    local bytes = file.contents
-    if not dest then
-      return json.encode{{status="fail",reason="bad tempfile, baad"}}
-    end
-    dest:write(bytes)
-    dest:close()
-    print("["..os.date("%c", t.submitted).. "] '"..t.filename.."' -> "..tname)
-    print("'"..t.filename .. "'".." " .. os.difftime(os.time(), t.submitted).."s")
-    t.md5 = u.bintohex(md5.sum(bytes))
-    local destname = t.md5..t.contenttype -- krav's pathless filename
-    t.path = tracks_path .. "/" .. destname
-    local rc, err = os.rename(tname, t.path)
-    if not rc then
-       return json.encode{{status="fail", reason=err}}
+    t, some = getfile(file)
+    -- attempt id3 extraction / file metadata
+    tags, failure = gettags(t.path)
+    if not tags then
+       return failure
     end
     print("'"..destname.. "'".." " .. os.difftime(os.time(), t.submitted).."s")
-    -- id3 extraction / file metadata -- TODO: expand tags into t
+    -- id3 extraction / file metadata
     t.tag = meta.gettags(t.path)
     -- add to database, tags and all
-    id = tracks:add(t, tag)
-    -- redirect to tag editor (what of multiple files?)
-    return json.encode{tracks=t,id=id}
+    id = tracks:add({unpack(t), unpack(tags)})
+    -- add to database, tags and all
+    return json.encode{tracks=t,id=id,tags=tags}
   elseif id then -- just editing the node
     tracks:put(id,web.POST)
   else -- not an upload, we have no id-ea
@@ -103,6 +115,7 @@ function post_db(web,...)
     return "Not enough, try harder."
   end
 
+  -- redirect to tag editor (what of multiple files?)
   return web:redirect("/#!database/edit/"..id)
 end
 
@@ -135,12 +148,23 @@ end
 function post_playlist(web, ...)
   station = ... or default_station
   -- only god knows yet
-  return json.encode({web.GET, path, tracks:dump()})
+  local id = web.POST.id
+  local list = json.decode(web.POST.list)
+  if id then
+    playlist:put(id, list)
+  else
+    playlist:add(list)
+  end
+  return json.encode{id=id, list=list}
 end
 function get_playlist(web, ...)
   station = ... or default_station
-  -- only god knows yet
-  return json.encode({web.GET, path, tracks:dump()})
+  local id = web.GET.id
+  if id then
+    return json.encode{playlist:get(id)}
+  else
+    return json.encode{playlist:search(web.GET.q)}
+  end
 end
 function put_playlist(web, ...)
   station = ... or default_station
@@ -181,6 +205,20 @@ function get_program(web, ...)
     return ""
   end
 end
+-- POST /program/
+-- {name:blah, selector=:id:, start:time, end:time, playlist:[{id={songid,etc}},..]}
+function post_program(web, ...)
+  local id = ... or nil
+  if not web.POST.start then
+    web.status = 400
+    return "Not enough, programs start somewhere"
+  end
+  if id then
+    program:put(id, web.POST)
+  else
+    program:add(web.POST)
+  end
+end
 
 -- GET /plan?from=time,to=time
 -- [{program, fra, til, pri},{}
@@ -200,7 +238,6 @@ end
 -- finds the current plan, specific program and in that
 -- program selects the next song
 function get_next(web, ...)
-  station = ... or default_station
   local station = ... or default_station
   -- pick a random unplayed track
   local result = tracks:search('', "path", 1, nil, "played")
@@ -209,12 +246,12 @@ function get_next(web, ...)
   --return json.encode(result[1])
 end
 function get_end(web, ...)
-  station = ... or default_station
+  local station = ... or default_station
   -- only god knows yet
   return json.encode({web.GET, path, tracks:dump()})
 end
 function get_meta(web, ...)
-  station = ... or default_station
+  local station = ... or default_station
   -- only god knows yet
   return json.encode({web.GET, path, tracks:dump()})
 end
