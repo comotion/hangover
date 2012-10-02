@@ -1,0 +1,23 @@
+
+program:
+- id
+- start time
+- length / end time 
+- dayofweek, dayofmonth, interval
+- creation datetime
+- station
+- username som sist fucka med programmet
+
+program kan itereres over eller søkes opp på tidspunkt, typ
+get_program(sometime) <- get_next(now())
+get_program(id)
+
+og inneholder også:
+- søk for å velge tracks automagisk
+- lister med tracks i sekvens
+
+
+- delegere timeslots til brukere
+
+- lag default selecta
+---
