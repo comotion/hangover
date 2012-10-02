@@ -1,0 +1,3 @@
+[submodule "web/lib/lamt"]
+	path = web/lib/lamt
+	url = git://github.com/comotion/lamt.git
