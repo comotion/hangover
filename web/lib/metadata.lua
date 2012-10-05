@@ -1,5 +1,5 @@
 module("metadata",package.seeall)
-local types,info,edit = unpack(require "lamt.mpeg")
+local types,info,edit = unpack(require ("lamt.mpeg"))
 local u = require "util"
 
 function gettags(path)

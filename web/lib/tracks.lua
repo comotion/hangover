@@ -15,7 +15,7 @@
 ---------------------------------
 -- Goals:
 -- unique add(artist,track,{key=val})
--- search(track{key=val},sort,limit,paginate)
+-- search(track{key=val},sort) : paginate
 -- filter to return only specific fields
 -- count total results (or pages)
 
@@ -45,37 +45,33 @@ function tracks:add(cols)
   return tracks:put(pkey, cols)
 end
 
-function tracks:ssearch(query, limit, page, qop, order)
+function tracks:ssearch(query, qop, order)
   local query = query or {station=default_station}
   local qop = qop or db.op.equal
   q = tokyocabinet.tdbqrynew(trk)
   for k,v in pairs(query) do
     q:addcond(k, qop, v)
   end
-  local size = #q:search() -- just to get size
   q:setorder(unpack(order))
-  q:setlimit(limit, skip)
-  return q:search(),math.floor(size/limit)+1
+  local res = q:search()
+  -- q:setlimit(limit, skip) -- we need the size so there is no use
+  return res, #res
 end
 
 -- search within the database
--- you can specify limit and page number
 -- returns array [id]={result}
-function tracks:search(query, qf, limit, page, qop, order)
-  local limit = limit or 25
-  local page = page or 1
-  local skip = (page-1)*limit
+function tracks:search(query, qf, qop, order)
   local order = order or {"added", db.sort.decreasing}
   if type(order) ~= "table" then order = {order, db.sort.increasing} end
   if not query or query == "" then query = {} end
 
-  local result, pages
+  local result, size
   if type(query) == "table" then
-    result,pages = tracks:ssearch(query, limit, page, qop, order)
+    result,size = tracks:ssearch(query, qop, order)
   else
-    result,pages = tracks:gsearch(query, qf, limit, page, order)
+    result,size = tracks:gsearch(query, qf, order)
   end
-  return tracks.fill(result),pages
+  return tracks.fill(result),size
 end
 
 function tracks.fields(result)
@@ -93,6 +89,7 @@ function tracks.fields(result)
 end
 
 
+-- take an array of id's and return a set of result tracks
 function tracks.fill(result)
   local rset = {}
   for i,v in ipairs(result) do
@@ -104,7 +101,7 @@ end
 -- search for query in all queryfields
 -- honour queries like "foo bar tag:value"
 -- todo: filter out results that don't match whole query
-function tracks:gsearch(q, qf, limit, page, order)
+function tracks:gsearch(q, qf, order)
   local queries = {}
   q,qf = q or '', qf or ''
   local tokens = u.split(q,', ')
@@ -143,9 +140,8 @@ function tracks:gsearch(q, qf, limit, page, order)
   -- pull out last query and execute on it
   qry = table.remove(queries)
   qry:setorder(unpack(order))
-  local pages = math.floor(#qry:metasearch(queries,qry.MSUNION)/limit)+1
-  qry:setlimit(limit, skip)
-  return qry:metasearch(queries,qry.MSUNION),pages
+  local result  = qry:metasearch(queries,qry.MSUNION)
+  return result, #result
 end
   
 function tracks:dump()
@@ -177,20 +173,25 @@ function tracks:update(pkey, cols)
 end
 
 -- return result with only fields
-function tracks.filter(result, fields)
+-- you can specify limit and page number
+function tracks.filter(result, fields, limit, skip)
   local res = {}
+  local c = 0
   for k,v in pairs(result) do
-    local one = {}
-    for i,f in pairs(fields) do
-      one[f] = v[f]
+    c = c + 1
+    if(c > skip+limit) then
+      break
     end
-    res[k] = one
+    if(c > skip) then
+      local one = {}
+      for i,f in pairs(fields) do
+        one[f] = v[f]
+      end
+      res[k] = one
+    end
   end
   return res
 end
-
-tracks:add({artist="yo",title="mama",foo="bar"})
-tracks:add( {artist="world",title="musack", foo="baz"})
 u.out("fapfapfap", tracks:dump())
 return tracks
 

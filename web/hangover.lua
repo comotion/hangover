@@ -4,15 +4,16 @@ local ocash = require "orbit.cache"
 local cjson  = require "cjson.safe" -- arf on error instead of barfing
 local json = cjson.new() -- is thread safer
 local convert, ratio, safe = json.encode_sparse_array(true)
-json.encode_invalid_numbers = true
+json.encode_invalid_numbers = true -- avoid b00gs
 
 module("hangover", package.seeall, orbit.new)
+package.path = package.path..";lib/?.lua;lib/?/?.lua"
 local cache  = ocash.new(hangover, cache_path)
-local tracks = require "lib.tracks"
-local u      = require "lib.util"
+local tracks = require "tracks"
+local u      = require "util"
 local io     = require "io"
 local md5    = require "md5"
-local meta   = require "lib.metadata"
+local meta   = require "metadata"
 
 require "config"
 local user = "badface" -- XXX: basic auth/user db
@@ -41,7 +42,8 @@ function get_db(web,...)
   end
   local query = web.GET.q or {}
   local limit = web.GET.maxresults or 25
-  local page = web.GET.page or 0
+  local page = web.GET.page or 1
+  local skip = (page-1)*limit
   local fields = web.GET.fields
   local qf = web.GET.qf or "artist,title"
   if type(limit)  == "table" then limit=limit[1] end
@@ -51,15 +53,16 @@ function get_db(web,...)
   if type(query)  == "table" then query = u.join(query) end
   if type(qf)     == "table" then qf = u.join(qf) end
 
-  local result, pages = tracks:search(query, qf, limit, page)
+  local result, size = tracks:search(query, qf)
+  local pages = math.floor(size/limit)+1
 
   if fields then
     fields = u.split(fields)
-    result = tracks.filter(result, fields)
   else
     fields = tracks.fields(result);
   end
-  return json.encode{{fields=fields,pages=pages,result=result}}
+  result = tracks.filter(result, fields, limit, skip)
+  return json.encode({{fields=fields,pages=pages,result=result}}).."\n"
 end
 
 function getfile(file)
@@ -73,12 +76,12 @@ function getfile(file)
   if not dest then
     return nil,json.encode{{status="fail",reason="bad tempfile, baad"}}
   end
-  -- for progress we need chunking and status
+  -- XXX: for progress we need chunking and status
   dest:write(bytes)
   dest:close()
   print("["..os.date("%c", t.submitted).. "] '"..t.filename.."' -> "..tname)
   print("'"..t.filename .. "'".." " .. os.difftime(os.time(), t.submitted).."s")
-t.md5 = u.bintohex(md5.sum(bytes))
+  t.md5 = u.bintohex(md5.sum(bytes))
   local destname = t.md5..t.contenttype -- krav's pathless filename
   t.path = tracks_path .. "/" .. destname
   local rc, err = os.rename(tname, t.path)
@@ -102,8 +105,6 @@ function post_db(web,...)
        return failure
     end
     print("'"..destname.. "'".." " .. os.difftime(os.time(), t.submitted).."s")
-    -- id3 extraction / file metadata
-    t.tag = meta.gettags(t.path)
     -- add to database, tags and all
     id = tracks:add({unpack(t), unpack(tags)})
     -- add to database, tags and all
