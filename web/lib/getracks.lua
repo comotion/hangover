@@ -74,19 +74,13 @@ pat = {
 end
 
 for path in io.lines() do 
+  tag = {}
   local tag = meta.gettags(path)
-  if tag then
-     print(json.encode(tag))
-  else
-     tag = notag(path)
-     tag.tagsource = "path"
-     print( "NO TAG: " .. path)
-  end
   -- need to move the file to the proper place
-  tag.path = path
   -- need to read the file to get the mdsum
-  tag.md5 = u.bintohex(md5.sum('abcdef'))
+  --tag.md5 = u.bintohex(md5.sum('abcdef'))
   -- should check if we have that hash
-  --id = tracks:add{unpack(info),unpack{info.tags}}
+  print(u.dump(tag))
+  --id = tracks:add{unpack(tag),unpack{tag.tags}}
 end
 

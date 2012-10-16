@@ -11,6 +11,26 @@ function join(t, sep)
   return table.concat(t,sep) --> "a,b,c"
 end
 
+-- flatten table tree into table
+function flatten(t)
+  local flat = {}
+  for k,v in pairs(t) do
+     if (type(v) == "table") then
+        local realflat = flatten(v)
+        -- merge it in
+        for sk,sv in pairs(realflat) do
+           if not flat[sk] then
+              flat[sk] = sv
+           end
+        end
+     else
+        flat[k] = v
+     end
+  end
+  return flat
+end
+        
+
 -- dump a table
 function dump(o)
   local s = ''
