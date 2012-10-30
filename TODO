@@ -40,6 +40,20 @@ how to prevent jingles cutting shows?
     .overlaid? (strict but doesnt cut)
     .force people to PLAN. if your show runs overtime, and there is a new show after, well, you were warned.
 
+concurrent?
+  copas -- not really concurrent?
+  concurrentlua -- fantastic, but will it jell?
+  fuck it, concurrency is in the many-users
+  luvit if anything..
+
+database?
+  tokyo has some shortcummings
+  -- esp. with regards to searches
+  -- concurrent axx: lua-tokyotyrant? daurnimator again
+  redis or riak?
+  -- redis has lua iface
+  -- riak has http iface
+
 interface coding:
   create program {name= time= endtime= owner=}
   search tracks

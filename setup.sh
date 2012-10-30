@@ -31,7 +31,7 @@ case $os in
 		dist=`lsb_release -si`
 		case $dist in
 			Debian|Ubuntu)
-				apt-get install luarocks zlib1g-dev liquidsoap libbz2-dev
+				apt-get install luarocks zlib1g-dev liquidsoap libbz2-dev libssl-dev
 				apt-get install liquidsoap-plugin-lame
 				# somethings wrong with the debian headers
 				#apt-get install tokyocabinet-bin libtokyocabinet-dev
@@ -44,6 +44,10 @@ case $os in
 				[ -d tokyocabinet-1.4.47 ] || wget http://fallabs.com/tokyocabinet/tokyocabinet-1.4.47.tar.gz -qO - | tar xzf -
 				cd tokyocabinet-1.4.47 && ./configure && make ;make install
 				cd -
+            [ -d tokyotyrant-1.1.41 ] || wget http://fallabs.com/tokyotyrant/tokyotyrant-1.1.41.tar.gz -qO - | tar xzf -
+            cd tokyotyrant-1.1.41 && ./configure && make
+            make install
+            cd -
 				[ -d tokyocabinet-lua-1.10 ] || wget http://fallabs.com/tokyocabinet/luapkg/tokyocabinet-lua-1.10.tar.gz -qO - | tar xzf -
 				cd tokyocabinet-lua*
 				./configure && make
@@ -58,7 +62,7 @@ case $os in
 
 esac
 
-for module in orbit lua-cjson lua-iconv md5
+for module in orbit lua-cjson lua-iconv luacrypto struct
 do 
    luarocks install $module
 done
