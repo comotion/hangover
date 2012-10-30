@@ -23,7 +23,7 @@ while preserving the most-specific-match-first principle for precedence.
 
 top-down example:
 { station: oslo bass radio,
-  selector: { random{all songs}}
+  selector: { random{all songs}} # for random 10 in search()
   timeline: {
      program:morn {{ 5h-14h}, selector: morning songs},
      program:midd {{14h-21h}, selector: midday songs},

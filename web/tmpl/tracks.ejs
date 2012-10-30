@@ -1,28 +1,28 @@
 <table class="table table-striped table-bordered">
   <tr>
-  <% fields.forEach(function(f){ %>
-    <th><%= f %></th>
-  <% }); %>
-    <th></th>
-  </tr>
+    <% fields.forEach(function(f){ %>
+      <th><%= f %></th>
+    <% }); %>
+      <th></th>
+    </tr>
 
   <% result.forEach(function(r){ %>
-  <tr>  <!-- TODO: make dragable -->
-    <% fields.forEach(function(f){ %>
-      <td><%= r[f] %></td>
-    <% }); %>
-    <td><a onclick="play(<%= r['id'] %>)">play</a></td>
-  </tr>
+    <tr>  <!-- TODO: make dragable -->
+      <% fields.forEach(function(f){ %>
+        <td><%= r[f] %></td>
+      <% }); %>
+      <td><a onclick="play(<%= r['id'] %>)">play</a></td>
+    </tr>
   <% }); %> 
-    </table>
-   
+</table>
 
-    <div class="pagination">
-      <ul>
-      <li><a href="#">Prev</a></li>
-      <li class="active"><a href="#">1</a></li>
-      <li><a href="#">2</a></li>
-      <li><a href="#">3</a></li>
-      <li><a href="#">Next</a></li>
-    </div>
+<div class="pagination">
+  <ul>
+    <li><a href="#">Prev</a></li>
+    <li class="active"><a href="#">1</a></li>
+    <li><a href="#">2</a></li>
+    <li><a href="#">3</a></li>
+    <li><a href="#">Next</a></li>
+  </ul>
+</div>
 

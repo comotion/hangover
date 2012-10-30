@@ -57,7 +57,7 @@ function tracks:ssearch(query, qop, order)
   for k,v in pairs(query) do
     q:addcond(k, qop, v)
   end
-  q:setorder(unpack(order))
+  if order then q:setorder(unpack(order)) end
   local res = q:search()
   -- q:setlimit(limit, skip) -- we need the size so there is no use
   return res, #res
@@ -137,7 +137,7 @@ function tracks:gsearch(q, qf, order)
       end
     end
     if #accu > 0 then
-      print("adding condition: " .. u.join(accu))
+      print("search " .. f .. " for " .. u.join(accu))
       q:addcond(f,db.op.onetoken,u.join(accu))
     end
     table.insert(queries,q)
@@ -188,9 +188,13 @@ function tracks.filter(result, fields, limit, skip)
       break
     end
     if(c > skip) then
-      local one = {}
-      for i,f in pairs(fields) do
-        one[f] = v[f]
+      if #fields == 0 then
+        one = v
+      else
+        local one = {}
+        for i,f in pairs(fields) do
+          one[f] = v[f]
+        end
       end
       res[k] = one
     end

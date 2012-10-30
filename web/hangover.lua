@@ -14,6 +14,7 @@ local u      = require "util"
 local io     = require "io"
 local crypto = require "crypto"
 local meta   = require "metadata"
+local program= require "program"
 
 require "config"
 local user = "badface" -- XXX: basic auth/user db
@@ -38,7 +39,7 @@ end
 -- Output: {fields=[id,title,artist], pages=3, result=[{id => 2, title => penis}, ...]}
 function get_db(web,...)
   if web.GET.id then
-    return json.encode{tracks:get(web.GET.id)}
+    return get_track(web, web.GET.id)
   end
   local query = web.GET.q or {}
   local limit = web.GET.maxresults or 25
@@ -66,11 +67,13 @@ function get_db(web,...)
 end
 
 function getfile(file)
+  t = {}
   t.user = user
   t.submitted = os.time()
   t.filename = file.name
   -- XXX: mayhap we shouldn't accept anything other than audio/?
   t.contenttype = string.gsub(string.gsub(file['content-type'], "audio",""), "/","")
+  t.extension = file.name:gmatch(".(%w+)$")()
   local dest,tname = u.open_temp_file(temp_dir.."/hangover_up@@@")
   local bytes = file.contents
   if not dest then
@@ -82,7 +85,7 @@ function getfile(file)
   print("["..os.date("%c", t.submitted).. "] '"..t.filename.."' -> "..tname)
   print("'"..t.filename .. "'".." " .. os.difftime(os.time(), t.submitted).."s")
   t.md5 = crypto.digest("md5", bytes)
-  local destname = t.md5..t.contenttype -- krav's pathless filename
+  local destname = t.md5..t.extension-- krav's pathless filename
   t.path = tracks_path .. "/" .. destname
   local rc, err = os.rename(tname, t.path)
   if not rc then
@@ -96,15 +99,14 @@ end
 -- Insert shit in database
 -- returns: trackid or error
 function post_db(web,...)
-  local id, file, t = web.POST.id, web.POST.file, {}
+  local id, file = web.POST.id, web.POST.file
   if file then -- someone is uploading a mix
     t, some = getfile(file)
     -- attempt id3 extraction / file metadata
-    tags, failure = gettags(t.path, t)
+    tags, failure = meta.gettags(t.path, t)
     if not tags then
        return failure
     end
-    print("'"..destname.. "'".." " .. os.difftime(os.time(), t.submitted).."s")
     -- add to database, tags and all
     id = tracks:add(tags)
     -- add to database, tags and all
@@ -119,6 +121,13 @@ function post_db(web,...)
   -- redirect to tag editor (what of multiple files?)
   return web:redirect("/#!database/edit/"..id)
 end
+
+-- GET   /db/:id:
+function get_track(web,...)
+  local id = ...
+  return json.encode{tracks:get(id)}
+end
+
 
 -- PUT   /db/:id:
 -- Update
@@ -236,7 +245,7 @@ end
 
 -- GET /next/:station:?time=now
 -- returns the path to the next song to play.
--- finds the current plan, specific program and in that
+-- finds the current ostn, specific program and in that
 -- program selects the next song
 function get_next(web, ...)
   local station = ... or default_station
@@ -294,8 +303,10 @@ hangover:dispatch_get(index, "/", "/post/(%d+)")
 
 -- the real red meat
 hangover:dispatch_get   (get_db, "/db/?")
+hangover:dispatch_get   (get_track, "/db/(%d+)")
 hangover:dispatch_post  (post_db,"/db/?")
 hangover:dispatch_put   (put_db, "/db/(%d+)")
+hangover:dispatch_post  (put_db, "/db/(%d+)")
 hangover:dispatch_delete(del_db, "/db/(%d+)")
 hangover:dispatch_get   (get_next, "/next/?", "/next/(%w+)")
 hangover:dispatch_get   (get_end, "/end/?", "/end/(%w+)")

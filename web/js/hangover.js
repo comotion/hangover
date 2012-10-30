@@ -24,7 +24,7 @@ var sort_fields = function(fields) {
       if(f[default_field_sort[i]] == undefined) {
         f[default_field_sort[i]] = [fields[i]];
       } else {
-        f[defualt_field_sort[i]].push(fields[i]); 
+        f[default_field_sort[i]].push(fields[i]); 
       }
     } else {
       // no default sort value
@@ -53,6 +53,7 @@ $.Controller("search", {
   "click": function(el) {
     var query={q: $('#query', el.parent()).val()};
     db.findAll(query, function(result) {
+      console.log(result[0]['result']);
       var r = result[0]; // what 
       if (r['result'].length == undefined) {
         console.log("null result");
@@ -80,7 +81,7 @@ $.route.bind('change', function(ev, attr, how, newval, oldval) {
         switch(ev['target']['action']) {
           case "edit":
             db.findOne({id: ev['target']['id']}, function(result) {   
-              var r = result[0]; // FIXME sort 
+              var r = result[0]; // FIXME sort - extract keys 
               $("#content").html($.View("tmpl/database_edit.ejs", {entry: r}));
             });
             break; // edit
