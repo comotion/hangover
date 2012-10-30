@@ -21,7 +21,7 @@ module("program", package.seeall)
 function program:init()
   return tokyo:init("programs")
 end
-prg = tokyo:init()
+prg = program:init()
 
 function program:put(pkey,cols)
   return tokyo:put(prg,pkey,cols)

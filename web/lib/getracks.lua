@@ -34,7 +34,7 @@ for path in io.lines() do
   tag.md5 = md5:final()
   -- check if we have that hash
   print(u.dump(tag))
-  --id = tracks:add(tag)
+  id = tracks:add(tag)
   -- move the file to the proper place
   -- symlink to canonical name? (for ease)
 end

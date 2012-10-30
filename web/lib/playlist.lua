@@ -8,7 +8,7 @@ module(..., package.seeall)
 function playlist:init()
   return tokyo:init("playlists")
 end
-pls = tokyo:init()
+pls = playlist:init()
 
 function playlist:put(pkey,cols)
 

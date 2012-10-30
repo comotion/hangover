@@ -45,7 +45,7 @@ case $os in
 				cd tokyocabinet-1.4.47 && ./configure && make ;make install
 				cd -
             [ -d tokyotyrant-1.1.41 ] || wget http://fallabs.com/tokyotyrant/tokyotyrant-1.1.41.tar.gz -qO - | tar xzf -
-            cd tokyotyrant-1.1.41 && ./configure && make
+            cd tokyotyrant-1.1.41 && ./configure --enable-lua && make
             make install
             cd -
 				[ -d tokyocabinet-lua-1.10 ] || wget http://fallabs.com/tokyocabinet/luapkg/tokyocabinet-lua-1.10.tar.gz -qO - | tar xzf -
