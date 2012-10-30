@@ -16,15 +16,17 @@ function pathstuff(path)
   -- initial title from path.. overwritten by tags
   tag.title = tag.filename:gsub('_', ' ')
   tag.path = path
+  tag.tagtype = 'none'
   return tag
 end
 
-function gettags(path)
-  local initial = pathstuff(path)
+function gettags(path, initial)
   local ok, intel, err = pcall(info, {path=path})
   if not ok or not intel then 
     errcode = intel or err
-    return nil, errcode, path
+    initial.tagtype = 'fail'
+    -- instead of nil, wrap error, don't want to delegate fails to caller
+    return initial, errcode, path
   end
 
   -- clean up tags, unpacking table{table} things

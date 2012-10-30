@@ -12,7 +12,7 @@ package.path = package.path..";lib/?.lua;lib/?/?.lua"
 local u = require "util"
 local meta = require "metadata"
 local tracks = require "tracks"
-local md5 = require "md5"
+local crypto = require "crypto"
 
 local json = require "cjson"
 local p = require "lamt.tagfrompath"
@@ -21,12 +21,21 @@ local BUFSIZE = 1048576
 
 for path in io.lines() do 
   tag = {}
-  local tag = meta.gettags(path)
-  -- need to move the file to the proper place
-  -- need to read the file to get the mdsum
-  --tag.md5 = u.bintohex(md5.sum('abcdef'))
-  -- should check if we have that hash
+  local initial = meta.pathstuff(path)
+  tag = meta.gettags(path, initial)
+  -- read the file to get the mdsum
+  md5 = crypto.digest.new("md5")
+  fd = io.open(path)
+  local block = fd:read(BUFSIZE)
+  while block do
+    md5:update(block)
+    block = fd:read(BUFSIZE)
+  end
+  tag.md5 = md5:final()
+  -- check if we have that hash
   print(u.dump(tag))
-  --id = tracks:add{unpack(tag),unpack{tag.tags}}
+  --id = tracks:add(tag)
+  -- move the file to the proper place
+  -- symlink to canonical name? (for ease)
 end
 

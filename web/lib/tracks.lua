@@ -42,9 +42,14 @@ function tracks:add(cols)
   local pkey = trk:genuid()
   cols.added   = os.time()
   cols.station = cols.station or default_station
+  if cols.md5 then
+    id = tracks:ssearch({md5=md5})
+    if id then return id end
+  end
   return tracks:put(pkey, cols)
 end
 
+-- the simple search
 function tracks:ssearch(query, qop, order)
   local query = query or {station=default_station}
   local qop = qop or db.op.equal

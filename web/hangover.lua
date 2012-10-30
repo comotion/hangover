@@ -12,7 +12,7 @@ local cache  = ocash.new(hangover, cache_path)
 local tracks = require "tracks"
 local u      = require "util"
 local io     = require "io"
-local md5    = require "md5"
+local crypto = require "crypto"
 local meta   = require "metadata"
 
 require "config"
@@ -81,7 +81,7 @@ function getfile(file)
   dest:close()
   print("["..os.date("%c", t.submitted).. "] '"..t.filename.."' -> "..tname)
   print("'"..t.filename .. "'".." " .. os.difftime(os.time(), t.submitted).."s")
-  t.md5 = u.bintohex(md5.sum(bytes))
+  t.md5 = crypto.digest("md5", bytes)
   local destname = t.md5..t.contenttype -- krav's pathless filename
   t.path = tracks_path .. "/" .. destname
   local rc, err = os.rename(tname, t.path)
@@ -100,17 +100,17 @@ function post_db(web,...)
   if file then -- someone is uploading a mix
     t, some = getfile(file)
     -- attempt id3 extraction / file metadata
-    tags, failure = gettags(t.path)
+    tags, failure = gettags(t.path, t)
     if not tags then
        return failure
     end
     print("'"..destname.. "'".." " .. os.difftime(os.time(), t.submitted).."s")
     -- add to database, tags and all
-    id = tracks:add({unpack(t), unpack(tags)})
+    id = tracks:add(tags)
     -- add to database, tags and all
     return json.encode{tracks=t,id=id,tags=tags}
   elseif id then -- just editing the node
-    tracks:put(id,web.POST)
+    return tracks:put(id,web.POST)
   else -- not an upload, we have no id-ea
     web.status = 400
     return "Not enough, try harder."
