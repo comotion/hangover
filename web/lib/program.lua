@@ -13,8 +13,9 @@
 -- { id, name, [selector, playlist]}
 require "os"
 require "math"
-local db  = require "lib.tokyo"
-local u   = require "lib.util"
+local db     = require "lib.tokyo"
+--local tracks = require "lib.tracks"
+local u      = require "lib.util"
 
 module("program", package.seeall)
 
@@ -22,6 +23,24 @@ function program:init()
   return tokyo:init("programs")
 end
 prg = program:init()
+
+program = {
+  name = "zonkas kronkas",
+  start = 123556127,
+  time = '12:45',
+  day = "sunday",
+  duration = '60 minutes',
+  recur = 'weekly',
+  stop = 133377777,
+  selector = { artist='mama', mood='evening' },
+  selector = "zabu cronik",
+  playlist = { 1, 3, 4, 10, 42 },
+}
+
+
+function selector(search)
+end
+
 
 function program:put(pkey,cols)
   return tokyo:put(prg,pkey,cols)

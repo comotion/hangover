@@ -74,7 +74,7 @@ function getfile(file)
   -- XXX: mayhap we shouldn't accept anything other than audio/?
   t.contenttype = string.gsub(string.gsub(file['content-type'], "audio",""), "/","")
   t.extension = file.name:gmatch(".(%w+)$")()
-  local dest,tname = u.open_temp_file(temp_dir.."/hangover_up@@@")
+  local dest, tname = u.open_temp_file(temp_dir.."/hangover_up@@@")
   local bytes = file.contents
   if not dest then
     return nil,json.encode{{status="fail",reason="bad tempfile, baad"}}
@@ -85,13 +85,16 @@ function getfile(file)
   print("["..os.date("%c", t.submitted).. "] '"..t.filename.."' -> "..tname)
   print("'"..t.filename .. "'".." " .. os.difftime(os.time(), t.submitted).."s")
   t.md5 = crypto.digest("md5", bytes)
-  local destname = t.md5..t.extension-- krav's pathless filename
+  local destname = t.md5..'.'..t.extension-- krav's pathless filename
   t.path = tracks_path .. "/" .. destname
+  print("now moving ... ".. tname .. ' path: '..t.path)
+  os.execute('mkdir -p '..tracks_path)
   local rc, err = os.rename(tname, t.path)
   if not rc then
     return nil, json.encode{{status="fail", reason=err}}
   end
   print("'"..destname.. "'".." " .. os.difftime(os.time(), t.submitted).."s")
+  print(u.dump(t));
   return t
 end
 
@@ -102,6 +105,9 @@ function post_db(web,...)
   local id, file = web.POST.id, web.POST.file
   if file then -- someone is uploading a mix
     t, some = getfile(file)
+    if not t then
+       return some
+    end
     -- attempt id3 extraction / file metadata
     tags, failure = meta.gettags(t.path, t)
     if not tags then
