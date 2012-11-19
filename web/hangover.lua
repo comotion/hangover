@@ -133,8 +133,7 @@ end
 function get_track(web,...)
   local id = ...
   local track = tracks:get(id)
-  local fields = u.keys(track)
-  return json.encode{{fields=fields,result=track}}
+  return json.encode(track)
 end
 
 

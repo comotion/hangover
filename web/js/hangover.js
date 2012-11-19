@@ -55,15 +55,15 @@ $.Controller("search", {
   "click": function(el) {
     var query={q: $('#query', el.parent()).val()};
     db.findAll(query, function(result) {
-      console.log(result[0]['result']);
       var r = result[0]; // what 
       if (r['result'].length == undefined) {
         console.log("null result");
         $("#searchresult").html("<h1>No match</h1>");
         return;
       }
-      r.fields = sort_fields(r.fields);
-      $("#searchresult").html($.View("tmpl/tracks.ejs", r));
+      fields = sort_fields(r.fields);
+      console.log(r);
+      $("#searchresult").html($.View("tmpl/tracks.ejs", {fields: fields, results: r.result}));
     });
     return(false);
   }
@@ -83,14 +83,11 @@ $.route.bind('change', function(ev, attr, how, newval, oldval) {
         switch(ev['target']['action']) {
           case "edit":
             db.findOne({id: ev['target']['id']}, function(result) {
-              var r = result[0];
-              var fields = sort_fields(r.fields)
-              $("#content").html($.View("tmpl/database_edit.ejs", {entry: r.result, fields: fields}));
+              var fields = ["filename", "title"]; // sort_fields(r.fields)
+              $("#content").html($.View("tmpl/database_edit.ejs", {entry: result, fields: fields}));
               var save_thing = function() {
                 var form = $('#entry').formParams();
-                console.log(r);
-                r.result = form;
-                result.save();
+                result.update(form);
                 return(false);
               }
               $("#save").bind("click", save_thing);
