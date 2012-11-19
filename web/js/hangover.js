@@ -50,7 +50,6 @@ $.Model('db', {
 
 $.Controller("search", {
   init : function(el) {
-      console.log("ef");
   },
   "click": function(el) {
     var query={q: $('#query', el.parent()).val()};
@@ -62,12 +61,14 @@ $.Controller("search", {
         return;
       }
       fields = sort_fields(r.fields);
-      console.log(r);
       $("#searchresult").html($.View("tmpl/tracks.ejs", {fields: fields, results: r.result}));
     });
     return(false);
   }
 });
+
+// search egen funksjon, page som aregument
+// bind knapper search pluss value
 
 $.route(":page/:action/:id");
 $.route(":page", {page: "home"});
