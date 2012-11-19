@@ -61,10 +61,10 @@ function get_db(web,...)
 
   if fields then
     fields = u.split(fields)
+    print("splitting fields: "..u.dump(fields))
   end
-  print("splitting fields: "..u.dump(fields))
   result = tracks.filter(result, fields, limit, skip)
-  return json.encode({{fields=fields,pages=pages,result=result}}).."\n"
+  return json.encode({{fields=tracks.fields(result),pages=pages,result=result}}).."\n"
 end
 
 function getfile(file)

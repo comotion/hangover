@@ -2,13 +2,14 @@
 What to do and how:
 
 + file upload fucks up!:: b/c tracks_path doesnt exist
-+ empty searches?! ::
-+ getracks 01.fuck yuo
++ empty searches?! :: b/c lua evals 0 to true!
++ getracks 01.fuck you. 
 + empty upload fucks up
 + get nonexistant track fucks up
 
 wishlist:
- - edit page
+ - edit page :: WIP.. iterate over fields
+ - edit page adds tags
  - error messages
  - (add to .. ) playlist builder
  - create program dialog (with sched picker)
