@@ -131,7 +131,9 @@ end
 -- GET   /db/:id:
 function get_track(web,...)
   local id = ...
-  return json.encode{tracks:get(id)}
+  local track = tracks:get(id)
+  local fields = u.keys(track)
+  return json.encode{fields=fields,track=track}
 end
 
 
