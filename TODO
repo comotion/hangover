@@ -1,9 +1,10 @@
 
 What to do and how:
 
-+ file upload fucks up!
-+ empty searches
++ file upload fucks up!:: b/c tracks_path doesnt exist
++ empty searches?! ::
 + getracks 01.fuck yuo
++ empty upload fucks up
 
 - get_next:
     knows about silences, metadata, can queue songs

@@ -42,11 +42,17 @@ function tracks:add(cols)
   local pkey = trk:genuid()
   cols.added   = os.time()
   cols.station = cols.station or default_station
+  print("adding ".. u.dump(cols))
   if cols.md5 then
     id = tracks:ssearch({md5=md5})
-    if id then return id end
+    if #id ~= 0 then
+       print("found id "..u.dump(id))
+       return id
+    end
   end
-  return tracks:put(pkey, cols)
+  id = tracks:put(pkey, cols)
+  print("the id added wasy: "..id)
+  return id
 end
 
 -- the simple search
