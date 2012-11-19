@@ -41,9 +41,11 @@ var sort_fields = function(fields) {
   return result.reverse();
 } 
 
+
 $.Model('db', {
-  findAll: "/db",
-  findOne: "/db"
+  findAll: "GET /db",
+  findOne: "GET /db",
+  update: "PUT /db/{id}",
 }, {});
 
 $.Controller("search", {
@@ -80,9 +82,18 @@ $.route.bind('change', function(ev, attr, how, newval, oldval) {
       case "database":
         switch(ev['target']['action']) {
           case "edit":
-            db.findOne({id: ev['target']['id']}, function(result) {   
-              var r = result[0]; // FIXME sort - extract keys 
-              $("#content").html($.View("tmpl/database_edit.ejs", {entry: r}));
+            db.findOne({id: ev['target']['id']}, function(result) {
+              var r = result[0];
+              var fields = sort_fields(r.fields)
+              $("#content").html($.View("tmpl/database_edit.ejs", {entry: r.result, fields: fields}));
+              var save_thing = function() {
+                var form = $('#entry').formParams();
+                console.log(r);
+                r.result = form;
+                result.save();
+                return(false);
+              }
+              $("#save").bind("click", save_thing);
             });
             break; // edit
           default:
