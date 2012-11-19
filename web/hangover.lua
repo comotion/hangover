@@ -144,8 +144,8 @@ function put_db(web,...)
   local id = ...
   local input = web.input.post_data
   u.out(input)
-  if input then
-    input = json.decode(input)
+  if not input then
+    return json.encode{{result=nil, error="nothing to put"}}
   end
   return tracks:update(id, input)
 end

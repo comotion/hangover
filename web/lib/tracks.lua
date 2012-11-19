@@ -207,6 +207,7 @@ function tracks.filter(result, fields, limit, skip)
   end
   return res
 end
-u.out("fapfapfap", tracks:dump())
+u.out("fapfapfap")
+u.out(tracks:dump())
 return tracks
 

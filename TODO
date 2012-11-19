@@ -5,6 +5,14 @@ What to do and how:
 + empty searches?! ::
 + getracks 01.fuck yuo
 + empty upload fucks up
++ get nonexistant track fucks up
+
+wishlist:
+ - edit page
+ - error messages
+ - (add to .. ) playlist builder
+ - create program dialog (with sched picker)
+ - delete track/playlist track/playlist/
 
 - get_next:
     knows about silences, metadata, can queue songs

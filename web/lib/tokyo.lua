@@ -7,7 +7,7 @@ local u = require "lib/util"
 module("tokyo", package.seeall)
 
 function tokyo:init(name)
-  local file = name .. ".tch"
+  local file = name .. ".tct"
 -- fix this stupidity. if you spell the query type wrong,
 -- you get no warnings, nothing.
 

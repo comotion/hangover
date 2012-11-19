@@ -1,3 +1,6 @@
 [submodule "web/lib/lamt"]
 	path = web/lib/lamt
 	url = git://github.com/comotion/lamt.git
+[submodule "web/lib/tokyotyrant"]
+	path = web/lib/tokyotyrant
+	url = https://github.com/daurnimator/lua-tokyotyrant.git
