@@ -57,11 +57,12 @@ function get_db(web,...)
   local result, size = tracks:search(query, qf)
   local pages = math.floor(size/limit)+1
 
+  print('got query: '.. u.dump(web.GET).. ' result: '.. u.dump(result))
+
   if fields then
     fields = u.split(fields)
-  else
-    fields = tracks.fields(result);
   end
+  print("splitting fields: "..u.dump(fields))
   result = tracks.filter(result, fields, limit, skip)
   return json.encode({{fields=fields,pages=pages,result=result}}).."\n"
 end
@@ -143,8 +144,8 @@ function put_db(web,...)
   local id = ...
   local input = web.input.post_data
   u.out(input)
-  if input then
-    input = json.decode(input)
+  if not input then
+    return json.encode{{result=nil, error="nothing to put"}}
   end
   return tracks:update(id, input)
 end
