@@ -194,12 +194,12 @@ function tracks.filter(result, fields, limit, skip)
       break
     end
     if(c > skip) then
-      if #fields == 0 then
-        one = v
+      if not fields or #fields == 0 then
+        one = v -- no fields, so all fields
       else
         local one = {}
         for i,f in pairs(fields) do
-          one[f] = v[f]
+          one[f] = v[f] -- just these fields
         end
       end
       res[k] = one
