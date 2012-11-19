@@ -1,0 +1,18 @@
+<form class="form-horizontal" id='entry'>
+  <% $.each(fields, function(i, f){ %>
+    <div class="control-group">
+      <label class="control-label" for="<%= f %>"><%= f %></label>
+      <div class="controls">
+        <input type="text" name="<%= f %>" value="<%= entry[f] %>">
+      </div>
+    </div>
+  <% }) %>
+  <div id="extra_fields"></div>
+  <div class="control-group">
+    <div class="controls">
+      <button class="btn">Add field</button>
+      <button class="btn btn-danger" id="save">Save</button>
+    </div>
+  </div>
+</form>
+
