@@ -114,6 +114,11 @@ function post_db(web,...)
     if not tags then
        return failure
     end
+    -- make a default title out of filename
+    if not tags.title then
+      tags.title = tags.filename:gsub(".(%w+)$","")
+    end
+
     -- add to database, tags and all
     id = tracks:add(tags)
     -- add to database, tags and all
@@ -147,7 +152,7 @@ function put_db(web,...)
     web.status = "501 someone fucked up"
     return json.encode{{result=nil, error="nothing to put"}}
   end
-  if not tracks:update(id, input) then
+  if not tracks:put(id, input) then
     web.status = "501 fubar"
     return json.encode{{result=nil, error="failed to put"}}
   end
