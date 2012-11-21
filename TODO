@@ -2,18 +2,23 @@
 What to do and how:
 
 + file upload fucks up!:: b/c tracks_path doesnt exist
-+ empty searches?! :: b/c lua evals 0 to true!
-+ getracks 01.fuck you. 
++ empty searches?! :: b/c lua evals 0 to true + fields is empty
++ getracks 01.fuck up. 
 + empty upload fucks up
 + get nonexistant track fucks up
 
+
 wishlist:
- - edit page :: WIP.. iterate over fields
+ - edit page :: WIP.. 
+  . iterate over fields
+  . hide some fields
+  . search -> edit button
  - edit page adds tags
  - error messages
  - (add to .. ) playlist builder
  - create program dialog (with sched picker)
- - delete track/playlist track/playlist/
+ - show schedule
+ - delete track/playlist{track}/playlist/program/
 
 - get_next:
     knows about silences, metadata, can queue songs

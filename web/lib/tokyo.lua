@@ -1,4 +1,9 @@
 -- goal is to abstract away db calls here
+--
+-- foo:init
+-- foo:put* key, val)
+-- foo:get(key)
+-- 
 
 require "tokyocabinet"
 require "os"
@@ -29,13 +34,22 @@ function tokyo:init(name)
   return db
 end
 
-function tokyo.put(db, pkey, cols)
+function tokyo:put(db, pkey, cols)
   if not db:put(pkey, cols) then
-    ecode = trk:ecode()
+    ecode = db:ecode()
     return nil,nil,db:errmsg(ecode)
   else
     return pkey, cols
   end
+end
+
+function tokyo:search(db, query, qop, order)
+  local q = tokyocabinet.tdbqrynew(db)
+  for k,v in pairs(query) do
+    q:addcond(k, qop, v)
+  end
+  if order then q:setorder(unpack(order)) end
+  return q:search()
 end
 
 -- create table mapping to magic constants

@@ -26,13 +26,13 @@ local u = require "lib/util"
 module("tracks", package.seeall)
 
 function tracks:init()
-  return tokyo:init("tracks")
+  return db:init("tracks")
 end
 
 local trk  = tracks:init()
 
 function tracks:put(pkey,cols)
-  return tokyo.put(trk, pkey, cols)
+  return db:put(trk, pkey, cols)
 end
 
 -- can have table of tags
@@ -50,22 +50,15 @@ function tracks:add(cols)
        return id
     end
   end
-  id = tracks:put(pkey, cols)
-  print("the id added wasy: "..id)
-  return id
+  return tracks:put(pkey, cols)
 end
 
 -- the simple search
 function tracks:ssearch(query, qop, order)
   local query = query or {station=default_station}
   local qop = qop or db.op.equal
-  q = tokyocabinet.tdbqrynew(trk)
-  for k,v in pairs(query) do
-    q:addcond(k, qop, v)
-  end
-  if order then q:setorder(unpack(order)) end
-  local res = q:search()
   -- q:setlimit(limit, skip) -- we need the size so there is no use
+  local res = db:search(trk, query, qop, order)
   return res, #res
 end
 
@@ -176,11 +169,12 @@ end
 
 function tracks:update(pkey, cols)
   p = tracks:get(pkey)
-  for k,v in pairs(p) do
-    cols[k] = v
+  -- merge teh data
+  for k,v in pairs(cols) do
+    p[k] = v
   end
   cols.updated = os.time()
-  return tracks:put(pkey,cols)
+  return tracks:put(pkey, p)
 end
 
 -- return result with only fields
