@@ -168,13 +168,7 @@ function tracks:get(pkey)
 end
 
 function tracks:update(pkey, cols)
-  p = tracks:get(pkey)
-  -- merge teh data
-  for k,v in pairs(cols) do
-    p[k] = v
-  end
-  cols.updated = os.time()
-  return tracks:put(pkey, p)
+  return tracks:put(pkey, cols)
 end
 
 -- return result with only fields

@@ -144,9 +144,14 @@ function put_db(web,...)
   local input = web.POST
   u.out(input)
   if not input then
+    web.status = "501 someone fucked up"
     return json.encode{{result=nil, error="nothing to put"}}
   end
-  return tracks:update(id, input)
+  if not tracks:update(id, input) then
+    web.status = "501 fubar"
+    return json.encode{{result=nil, error="failed to put"}}
+  end
+  return json.encode(tracks:get(id))
 end
 -- DELETE /db/:id:
 -- Remove
