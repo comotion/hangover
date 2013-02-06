@@ -44,7 +44,7 @@ local op = {
   noindex   = "NOIDX",
 }
 
-local sort = {
+tyrant.sort = {
   lexic     = "STRASC",
   reverse   = "STRDESC",
   increasing= "NUMASC",
@@ -59,7 +59,7 @@ function tyrant:init(name)
     db:open()
   end
   -- XXX pass "handle" back to client
-  return self
+  return db,tbl
 end
 
 -- create an entry
@@ -67,13 +67,14 @@ function tyrant:add(name, cols)
   cols._type = name
   cols.added = cols.added or os.time()
   local id = tbl:genuid()
+  print("ADDING!"..u.dump(cols))
   return tbl:put(id, cols)
 end
 
 -- find entries of given _type=name
 function tyrant:search(name, query, qop, order)
   local q = tyr.query.new()
-  q:addcond('_type', op.equals, name)
+  q:addcond('_type', op.equal, name)
   for k,v in pairs(query) do
     q:addcond(k, qop, v)
   end
@@ -85,6 +86,7 @@ end
 function tyrant:ssearch(name, query, qop, order)
   local query = query or {_type = name, station=default_station}
   local qop = qop or op.equal
+  print("qop is ".. u.dump(qop))
   -- q:setlimit(limit, skip) -- we need the size so there is no use
   local res = tyrant:search(name, query, qop, order)
   return res, #res
@@ -124,18 +126,6 @@ end
 
 function tyrant:dump(name)
 --iterate over the whole db, or _type = name
-end
-function tyrant:get(pkey)
--- get primary key
-end
-function tyrnat:put(pkey, cols)
--- put stuff
-end
-function tyrant:update(pkey,cols)
--- merge stuff in to the database
-end
-function tyrant:search(db, query, qop, order)
--- search db for strings
 end
 
 -- search for query in all queryfields

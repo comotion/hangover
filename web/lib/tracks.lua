@@ -42,7 +42,7 @@ function tracks:add(cols)
   cols.station = cols.station or default_station
   print("adding ".. u.dump(cols))
   if cols.md5 then
-    id = tracks:ssearch({md5=md5})
+    id = db:ssearch(_t,{md5=md5})
     if #id ~= 0 then
        print("found id "..u.dump(id))
        return id
@@ -61,9 +61,9 @@ function tracks:search(query, qf, qop, order)
 
   local result, size
   if type(query) == "table" then
-    result,size = db:ssearch(query, qop, order)
+    result,size = db:ssearch(_t, query, qop, order)
   else
-    result,size = tracks:gsearch(query, qf, order)
+    result,size = db:gsearch(_t, query, qf, order)
   end
   return tracks.fill(result),size
 end
@@ -93,20 +93,23 @@ function tracks.fill(result)
 end 
   
 function tracks:dump()
-  trk:iterinit()
+return nil
+--[[
+  db:iterinit()
   local key, value, accu
   accu = {}
   while true do
-    key = trk:iternext()
+    key = db:iternext()
     if not key then break end
-    value = trk:get(key)
+    value = db:get(key)
     table.insert(accu,value)
   end
   return u.dump(accu)
+  --]]
 end
 
 function tracks:get(pkey)
-  local track = trk:get(pkey)
+  local track = db:get(_t,pkey)
   track.id = pkey
   return track
 end
