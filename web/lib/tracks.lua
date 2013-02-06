@@ -20,26 +20,24 @@
 -- count total results (or pages)
 
 require "os"
-local db = require "lib/tokyo"
+local db = require "lib/tyrant"
 local u = require "lib/util"
 
-module("tracks", package.seeall)
+local _t = "tracks"
+module(_t, package.seeall)
+
 
 function tracks:init()
   return db:init("tracks")
 end
 
-local trk  = tracks:init()
-
-function tracks:put(pkey,cols)
-  return db:put(trk, pkey, cols)
+function tracks:put(id, cols)
+  return db:put(_t, id, cols)
 end
-
 -- can have table of tags
 -- returns: trackid,entry,error
 function tracks:add(cols) 
   local cols = cols or {}
-  local pkey = trk:genuid()
   cols.added   = os.time()
   cols.station = cols.station or default_station
   print("adding ".. u.dump(cols))
@@ -50,17 +48,9 @@ function tracks:add(cols)
        return id
     end
   end
-  return tracks:put(pkey, cols)
+  return db:add(_t, cols)
 end
 
--- the simple search
-function tracks:ssearch(query, qop, order)
-  local query = query or {station=default_station}
-  local qop = qop or db.op.equal
-  -- q:setlimit(limit, skip) -- we need the size so there is no use
-  local res = db:search(trk, query, qop, order)
-  return res, #res
-end
 
 -- search within the database
 -- returns array [id]={result}
@@ -71,7 +61,7 @@ function tracks:search(query, qf, qop, order)
 
   local result, size
   if type(query) == "table" then
-    result,size = tracks:ssearch(query, qop, order)
+    result,size = db:ssearch(query, qop, order)
   else
     result,size = tracks:gsearch(query, qf, order)
   end
@@ -100,53 +90,7 @@ function tracks.fill(result)
     rawset(rset,tonumber(v),tracks:get(v))
   end
   return rset
-end
-
--- search for query in all queryfields
--- honour queries like "foo bar tag:value"
--- todo: filter out results that don't match whole query
-function tracks:gsearch(q, qf, order)
-  local queries = {}
-  q,qf = q or '', qf or ''
-  local tokens = u.split(q,', ')
-  local qf = u.split(qf)
-  local qry
-
-  -- collect terms
-  local accu = {}
-  local tags = {}
-  for i,v in pairs(tokens) do
-    t = u.split(v,':')
-    if #t > 1 then
-      tags[t[1]] = t[2]
-    else
-      table.insert(accu, v)
-    end
-  end
-
-  -- create one search per field
-  for j,f in pairs(qf) do
-    local q = tokyocabinet.tdbqrynew(trk)
-    for t,v in pairs(tags) do
-      a = u.split(v,',')
-      if #a > 1 then
-        q:addcond(t,db.op.one,v)
-      else
-        q:addcond(t,db.op.inclusive,v)
-      end
-    end
-    if #accu > 0 then
-      print("search " .. f .. " for " .. u.join(accu))
-      q:addcond(f,db.op.onetoken,u.join(accu))
-    end
-    table.insert(queries,q)
-  end
-  -- pull out last query and execute on it
-  qry = table.remove(queries)
-  qry:setorder(unpack(order))
-  local result  = qry:metasearch(queries,qry.MSUNION)
-  return result, #result
-end
+end 
   
 function tracks:dump()
   trk:iterinit()
