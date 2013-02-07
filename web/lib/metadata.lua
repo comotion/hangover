@@ -10,9 +10,9 @@ function pathstuff(path)
   local tag = {}
   local spa = u.split(path, '/')
   spa = spa[#spa] -- drop path stuff
+  tag.filename = spa
   spa = u.split(spa, '.')
-  tag.extension = spa[#spa]
-  tag.filename = spa[1]
+  tag.extension = table.remove(spa)
   -- initial title from path.. overwritten by tags
   tag.title = tag.filename:gsub('_', ' ')
   tag.path = path

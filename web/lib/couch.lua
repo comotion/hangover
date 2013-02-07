@@ -4,9 +4,6 @@
 couchdb has views for queries.
 want to look up some word for all fields
 
-get all keys:
-map: function(doc) { for (var thing in doc) { emit(thing,1); } }
-reduce: function(key,values) { return sum(values); }
 
 
 get all values for a key: ( not really cool, uses loadsa disk)
@@ -27,6 +24,7 @@ http://sitr.us/2009/06/30/database-queries-the-couchdb-way.html
 require "luchia"
 module("couch", package.seeall)
 
+local u = require "util"
 local default_server = { host = "localhost", port = 5984, protocol = "http" }
 local db
 local doc
@@ -47,7 +45,29 @@ function couch:init(database, server)
    return doc
 end
 
-function couch:genuid(doc)
+-- put up view scaffolding
+-- FIXME: add moar views.
+function couch:put_views(database)
+  local views = {
+     _id = "_design/search",
+     language = "javascript",
+     views = {
+        all = {
+           map= "function(doc) { emit(null, doc) }"
+        },
+        allkeys = {
+           map = "function(doc) { for (var thing in doc) { emit(thing,1); } }",
+           reduce = "function(key,values) { return sum(values); }"
+        },
+        md5 = {
+           map = "function(doc) { if(doc.md5) { emit(doc.md5, null) } }"
+        }
+     }
+  }
+  return database:create(views, views._id)
+end
+
+function couch:genuid()
    local uuid = srv:uuids(1)[1]
    -- check if uuid is in use, to be sure
    while pcall(doc.info,doc,uuid) do
@@ -80,11 +100,39 @@ function couch:dump()
 
 end
 
+function lookup(doc, view, k, v)
+   local path = "_design/"..view.."/_view/"..k
+   print("Path is "..path .. " v: " ..v)
+   return doc:retrieve(path, { key = '"'..v..'"' })
+end
 -- needs a moar thorough rewrite..
 -- lookup artist and album and title contains query
 ---- or tag = "" or tag contains query
-function couch:search(db, query, qop, order)
-   doc:retrieve(query);
+function couch:search(doc, query, qop, order)
+   local rset = {}
+   local ret
+   for k,v in pairs(query) do
+      print("search: "..k .." -> " .. v)
+      ret = couch.lookup(doc, "search", k, v)
+      --ret = doc:retrieve("_design/search/_view/md5", {key=v})
+      if ret then
+         return ret
+      end
+   end
+   return rset
+end
+
+function couch:generate_view(doc, query)
+   local sel = ''
+   for k, v in pairs(query) do
+      sel = sel .. 'doc.'..k..'.indexOf("'..v..'") != -1 && '
+   end
+   sel = sel .. '1'
+   print("generating view: ".. sel)
+   local view = {
+      map = "function(doc) { if ( "..sel.." ) { emit(doc) } }"
+   }
+   return doc:create(view, "_temp_view")
 end
 
 return couch

@@ -27,7 +27,9 @@ module("tracks", package.seeall)
 local database = "tracks"
 
 function tracks:init()
-  return db:init(database)
+  local base = db:init(database)
+  db:put_views(base)
+  return base
 end
 
 -- local instance of the db connection saves us an init call
@@ -45,30 +47,19 @@ function tracks:add(cols)
   cols.station = cols.station or default_station
   print("adding ".. u.dump(cols))
   if cols.md5 then
-    id = db:ssearch(_t,{md5=md5})
+    local id = db:search(trk, {md5=cols.md5})
     if #id ~= 0 then
        print("found id "..u.dump(id))
        return id
     end
   end
-  return db:add(_t, cols)
+  return db:put(trk, id, cols)
 end
 
 
 -- search within the database
 -- returns array [id]={result}
 function tracks:search(query, qf, qop, order)
-  local order = order or {"added", db.sort.decreasing}
-  if type(order) ~= "table" then order = {order, db.sort.increasing} end
-  if not query or query == "" then query = {} end
-
-  local result, size
-  if type(query) == "table" then
-    result,size = db:ssearch(_t, query, qop, order)
-  else
-    result,size = db:gsearch(_t, query, qf, order)
-  end
-  return tracks.fill(result),size
 end
 
 function tracks.fields(result)
@@ -100,7 +91,7 @@ function tracks:dump()
 end
 
 function tracks:get(pkey)
-  local track = db:get(_t,pkey)
+  local track = db:get(pkey)
   track.id = pkey
   return track
 end

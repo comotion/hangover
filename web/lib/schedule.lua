@@ -11,51 +11,51 @@
 -- 
 -- a program has
 -- { id, name, [selector, playlist]}
+--[[
+ {
+	name     : "Drinking is not a spectator sport",
+	selector : "",
+	selector : [ artist='mama', mood='evening' ],
+	selector : "zabu cronik",
+	start    : "2013-02-05T22:00:00Z",
+	end      : "2013-02-06T04:00:00Z",
+	time     : "22:45",
+	duration : "60",
+	repeat   : "weekly",
+	playlists: ["oslobass/DMxCgbHM", "oslobass/LTk1dGZ0"]
+}
+--]]
+
 require "os"
 require "math"
-local db     = require "lib.tokyo"
+local db     = require "couch"
 --local tracks = require "lib.tracks"
-local u      = require "lib.util"
+local u      = require "util"
 
-module("program", package.seeall)
+module("schedule", package.seeall)
+local database = "schedule"
 
-function program:init()
-  return tokyo:init("programs")
+function schedule:init()
+  return db:init(database)
 end
-prg = program:init()
-
-program = {
-  name = "zonkas kronkas",
-  start = 123556127,
-  time = '12:45',
-  day = "sunday",
-  duration = '60 minutes',
-  recur = 'weekly',
-  stop = 133377777,
-  selector = { artist='mama', mood='evening' },
-  selector = "zabu cronik",
-  playlist = { 1, 3, 4, 10, 42 },
-}
-
-
-function selector(search)
-end
-
-
-function program:put(pkey,cols)
-  return tokyo:put(prg,pkey,cols)
-end
+shd = schedule:init()
 
 -- a program has a human-friendly name, 
 -- launches at some date, starts at a particular time of day
 -- lasts for x minutes and optionally repeats
 -- every X * {day, week, month, year}
-function program:add(name, startdate, time, duration, every, X)
-  local p = {}
-  p.name = name
-  p.startday = startdate
-  p.time = time
-  p.duration = duration
+function schedule:add(name, startdate, time, duration, every, X)
+   local p = {}
+   p.name = name
+   p.startday = startdate
+   p.time = time
+   p.duration = duration
+   local id = p.station .. '/'..db:genuid()
+   return db:add(shd, id, p)
+end
+
+function schedule:get(id)
+   return db:get(shd, id)
 end
 
 -- when asked to compile a plan,
