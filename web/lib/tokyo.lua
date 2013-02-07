@@ -93,5 +93,18 @@ function tokyo_booter()
   return db
 end
 
+function tokyo:dump()
+  trk:iterinit()
+  local key, value, accu
+  accu = {}
+  while true do
+    key = trk:iternext()
+    if not key then break end
+    value = trk:get(key)
+    table.insert(accu,value)
+  end
+  return accu
+end
+
 
 return tokyo

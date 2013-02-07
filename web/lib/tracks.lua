@@ -20,24 +20,27 @@
 -- count total results (or pages)
 
 require "os"
-local db = require "lib/tyrant"
+local db = require "couch"
 local u = require "lib/util"
 
-local _t = "tracks"
-module(_t, package.seeall)
-
+module("tracks", package.seeall)
+local database = "tracks"
 
 function tracks:init()
-  return db:init("tracks")
+  return db:init(database)
 end
 
-function tracks:put(id, cols)
-  return db:put(_t, id, cols)
+-- local instance of the db connection saves us an init call
+local trk  = tracks:init()
+
+function tracks:put(pkey,cols)
+  return db:put(trk, pkey, cols)
 end
 -- can have table of tags
 -- returns: trackid,entry,error
 function tracks:add(cols) 
   local cols = cols or {}
+  local pkey = db:genuid()
   cols.added   = os.time()
   cols.station = cols.station or default_station
   print("adding ".. u.dump(cols))
@@ -93,19 +96,7 @@ function tracks.fill(result)
 end 
   
 function tracks:dump()
-return nil
---[[
-  db:iterinit()
-  local key, value, accu
-  accu = {}
-  while true do
-    key = db:iternext()
-    if not key then break end
-    value = db:get(key)
-    table.insert(accu,value)
-  end
-  return u.dump(accu)
-  --]]
+  return u.dump(db:dump())
 end
 
 function tracks:get(pkey)
