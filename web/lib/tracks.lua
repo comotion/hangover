@@ -20,15 +20,17 @@
 -- count total results (or pages)
 
 require "os"
-local db = require "lib/tokyo"
+local db = require "couch"
 local u = require "lib/util"
 
 module("tracks", package.seeall)
+local database = "tracks"
 
 function tracks:init()
-  return db:init("tracks")
+  return db:init(database)
 end
 
+-- local instance of the db connection saves us an init call
 local trk  = tracks:init()
 
 function tracks:put(pkey,cols)
@@ -39,7 +41,7 @@ end
 -- returns: trackid,entry,error
 function tracks:add(cols) 
   local cols = cols or {}
-  local pkey = trk:genuid()
+  local pkey = db:genuid()
   cols.added   = os.time()
   cols.station = cols.station or default_station
   print("adding ".. u.dump(cols))
@@ -149,16 +151,7 @@ function tracks:gsearch(q, qf, order)
 end
   
 function tracks:dump()
-  trk:iterinit()
-  local key, value, accu
-  accu = {}
-  while true do
-    key = trk:iternext()
-    if not key then break end
-    value = trk:get(key)
-    table.insert(accu,value)
-  end
-  return u.dump(accu)
+  return u.dump(db:dump())
 end
 
 function tracks:get(pkey)

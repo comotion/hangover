@@ -45,6 +45,27 @@ search for
   -- post-filter the search to remove entries that don't include all tokens
 
 we have opted for just doing metasearches at the cost of less intuitive searches
-
 for now.
+
+Problem is general. shit is real.
+
+approach theta:
+get all keys, search in these
+
+approach chi:
+get all key=value pairs, search in these = "uniview"
+
+approach zeta:
+lucene, or solr, fulltext it.
+
+approach tau:
+stick to a predefined set of views.
+
+approach rho:
+use riak-search. why this not better than solr?
+
+approach ksi:
+generate views(indexes) on-the-fly if they dont exist
+..you add an unindexed tag, we make a view on that tag..
+
 
