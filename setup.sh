@@ -64,6 +64,8 @@ case $os in
     esac
 esac
 
+# arch is using some broken cvs shit
+luarocks install wsapi 1.5-1
 for module in orbit lua-cjson lua-iconv luacrypto struct
 do 
    luarocks install $module
