@@ -1,11 +1,31 @@
 
 What to do and how:
 
-+ file upload fucks up!:: b/c tracks_path doesnt exist
-+ empty searches?! :: b/c lua evals 0 to true + fields is empty
-+ getracks 01.fuck up. 
-+ empty upload fucks up
-+ get nonexistant track fucks up
++ frontend stuff (hangover-web)
+ schedules:
+ (editor view)
+ create schedules, see schedule for $time
+ ---> 
+ schedule: 
+ (dj view)
+ change schedule
+ change selector
+ create, edit playlist
+
++ backend stuff
+  couch views:
+    - find a song by artist/title/album?/tag
+  really want "all tracks that contain blah"
+  can have  "all tracks where artist or title begins with blah"
+  or separate dialogs for artist:boo title:bar etc:zoo
+  or js runs trough all tracks
+
+    - for each term, if tag contains term, emit
+
+   + file upload fucks up!:: b/c tracks_path doesnt exist
+   + empty searches?! :: b/c lua evals 0 to true + fields is empty
+   + empty upload fucks up
+   + get nonexistant track fucks up
 
 
 wishlist:
@@ -36,20 +56,20 @@ wishlist:
 
 station is a selector and a timeline
 one timeline per station (account for multitrack stuff later)
-=actualized program for given timeperiod is set of program:<start,end,{transitions}>
+=actualized schedule for given timeperiod is set of schedule:<start,end,{transitions}>
 while preserving the most-specific-match-first principle for precedence.
-   program is set of selectors and playlists.
+   schedule is set of selectors and playlists.
 
 top-down example:
 { station: oslo bass radio,
   selector: { random{all songs}} # for random 10 in search()
   timeline: {
-     program:morn {{ 5h-14h}, selector: morning songs},
-     program:midd {{14h-21h}, selector: midday songs},
-     program:eve  {{21h-04h}, selector: evening songs},
-     program:schizo pinguino {sundays 12}, selector: playlist: {show 1, jingle 2, blah 3}}
-     program: keystone jingle {every 34 min}, selector: {tag: jingles},
-     program: live spot { switch to feed blah at {button / time } if available
+     schedule:morn {{ 5h-14h}, selector: morning songs},
+     schedule:midd {{14h-21h}, selector: midday songs},
+     schedule:eve  {{21h-04h}, selector: evening songs},
+     schedule:schizo pinguino {sundays 12}, selector: playlist: {show 1, jingle 2, blah 3}}
+     schedule: keystone jingle {every 34 min}, selector: {tag: jingles},
+     schedule: live spot { switch to feed blah at {button / time } if available
 } 
 how to prevent jingles cutting shows?
   - create strict rules of precedence
@@ -58,20 +78,6 @@ how to prevent jingles cutting shows?
     ."strict start/stop? / transitions"
     .overlaid? (strict but doesnt cut)
     .force people to PLAN. if your show runs overtime, and there is a new show after, well, you were warned.
-
-concurrent?
-  copas -- not really concurrent?
-  concurrentlua -- fantastic, but will it jell?
-  fuck it, concurrency is in the many-users
-  luvit if anything..
-
-database?
-  tokyo has some shortcummings
-  -- esp. with regards to searches
-  -- concurrent axx: lua-tokyotyrant? daurnimator again
-  redis or riak?
-  -- redis has lua iface
-  -- riak has http iface
 
 interface coding:
   create program {name= time= endtime= owner=}
